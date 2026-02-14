@@ -1,9 +1,11 @@
-const express =require("express");
-const router  = express.Router();
-const adminController  = require("../controller/adminController");
+const express = require("express");
+const router = express.Router();
+const adminController = require("../controller/adminController");
 
-router.post("/",adminController.createUser);
-router.post("/login",adminController.loginUser);
-router.get("/teachers",adminController.listTeachers);
+const { verifyTokenAndSuperAdmin, verifyTokenAndAdmin } = require("../middlewares/auth");
+
+router.post("/", verifyTokenAndSuperAdmin, adminController.createUser); // Only SuperAdmin can create new Admin/Teacher
+router.post("/login", adminController.loginUser); // Public
+router.get("/teachers", verifyTokenAndAdmin, adminController.listTeachers); // Admin/SuperAdmin can view teachers
 
 module.exports = router;

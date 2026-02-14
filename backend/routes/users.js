@@ -29,43 +29,48 @@ const usersController = require('../controller/usersController');
 // ======================================
 // GET ALL USERS
 // ======================================
-router.get('/', usersController.listUsers);
+const { verifyTokenAndAdmin, verifyTokenAndTeacher, verifyTokenAndSuperAdmin } = require("../middlewares/auth");
+
+// ======================================
+// GET ALL USERS
+// ======================================
+router.get('/', verifyTokenAndTeacher, usersController.listUsers); // Teacher/Admin/SuperAdmin
 
 
 // ======================================
 // CREATE NEW USER (Application Form)
 // ======================================
-router.post('/', usersController.createUser);
+router.post('/', usersController.createUser); // Public (Admission Form)
 
 
 // ======================================
 // USER LOGIN
 // ======================================
-router.post('/userlogin', usersController.loginUser);
+router.post('/userlogin', usersController.loginUser); // Public
 
 
 // ======================================
 // APPROVE STUDENT
 // ======================================
-router.put('/approve/:id', usersController.approveStudent);
+router.put('/approve/:id', verifyTokenAndAdmin, usersController.approveStudent); // Admin/SuperAdmin
 
 
 // ======================================
 // ADMIT STUDENT
 // ======================================
-router.put('/admit/:id', usersController.admitStudent);
+router.put('/admit/:id', verifyTokenAndAdmin, usersController.admitStudent); // Admin/SuperAdmin
 
 
 // ======================================
 // MARK AS OLD STUDENT
 // ======================================
-router.put('/mark-old/:id', usersController.markOldStudent);
+router.put('/mark-old/:id', verifyTokenAndAdmin, usersController.markOldStudent); // Admin/SuperAdmin
 
 
 // ======================================
 // DELETE USER
 // ======================================
-router.delete('/:id', usersController.deleteUser);
+router.delete('/:id', verifyTokenAndSuperAdmin, usersController.deleteUser); // SuperAdmin Only
 
 
 // ======================================
