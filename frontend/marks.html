@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Marks Management</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f0f4f8; }
+        h1 { text-align: center; color: #2c3e50; }
+        form, table { margin: 20px auto; width: 80%; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 5px 10px rgba(0,0,0,0.1);}
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        button { padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; margin:2px;}
+        .delete-btn { background: #e74c3c; color: #fff; }
+        .edit-btn { background: #3498db; color: #fff; }
+        .save-btn { background: #2ecc71; color: #fff; }
+    </style>
+</head>
+<body>
+
+<h1>Marks Management</h1>
+
+<form id="marksForm">
+    <select id="studentSelect" required>
+        <option value="">Select Student</option>
+    </select>
+    <input type="text" id="subject" placeholder="Subject" required>
+    <input type="number" id="marks" placeholder="Marks" required>
+    <button type="submit">Add Marks</button>
+</form>
+
+<table id="marksTable">
+    <thead>
+        <tr>
+            <th>Student Name</th>
+            <th>Subject</th>
+            <th>Marks</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+const API_URL = "http://localhost:5000/api/marks";
+const STUDENT_API = "http://localhost:5000/api/students";
+const tableBody = document.querySelector("#marksTable tbody");
+const studentSelect = document.getElementById("studentSelect");
+
+// Load students
+async function loadStudents() {
+    const res = await fetch(STUDENT_API);
+    const students = await res.json();
+    studentSelect.innerHTML = '<option value="">Select Student</option>';
+    students.forEach(s => {
+        studentSelect.innerHTML += `<option value="${s._id}">${s.userId?.name || ""}</option>`;
+    });
+}
+
+// Load marks
+async function loadMarks() {
+    const res = await fetch(API_URL);
+    const marksList = await res.json();
+    tableBody.innerHTML = "";
+    marksList.forEach(m => {
+        tableBody.innerHTML += `
+            <tr id="row-${m._id}">
+                <td>${m.studentId || ""}</td>
+                <td id="subject-${m._id}">${m.subject}</td>
+                <td id="marks-${m._id}">${m.marks}</td>
+                <td>
+                    <button class="edit-btn" onclick="editMarks('${m._id}')">Edit</button>
+                    <button class="delete-btn" onclick="deleteMarks('${m._id}')">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+// Add marks
+document.getElementById("marksForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const data = {
+        studentId: studentSelect.value,
+        subject: document.getElementById("subject").value,
+        marks: document.getElementById("marks").value
+    };
+    await fetch(API_URL, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(data)});
+    alert("Marks added!");
+    loadMarks();
+});
+
+// Delete marks
+async function deleteMarks(id) {
+    await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    alert("Marks deleted!");
+    loadMarks();
+}
+
+// Edit marks
+function editMarks(id) {
+    const subjectCell = document.getElementById(`subject-${id}`);
+    const marksCell = document.getElementById(`marks-${id}`);
+    const oldSubject = subjectCell.innerText;
+    const oldMarks = marksCell.innerText;
+
+    subjectCell.innerHTML = `<input type="text" id="edit-subject-${id}" value="${oldSubject}">`;
+    marksCell.innerHTML = `<input type="number" id="edit-marks-${id}" value="${oldMarks}">`;
+
+    const actionsCell = subjectCell.parentElement.querySelector("td:last-child");
+    actionsCell.innerHTML = `<button class="save-btn" onclick="saveMarks('${id}')">Save</button>`;
+}
+
+// Save marks
+async function saveMarks(id) {
+    const newSubject = document.getElementById(`edit-subject-${id}`).value;
+    const newMarks = document.getElementById(`edit-marks-${id}`).value;
+    await fetch(`${API_URL}/${id}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ subject: newSubject, marks: newMarks }) });
+    alert("Marks updated!");
+    loadMarks();
+}
+
+loadStudents();
+loadMarks();
+</script>
+
+</body>
+</html>

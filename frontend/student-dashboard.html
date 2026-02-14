@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Student Dashboard</title>
+<style>
+body{margin:0;font-family:Arial;background:#f0fff4;}
+.nav{background:#20c997;color:white;padding:15px;display:flex;justify-content:space-between;}
+.container{padding:30px;}
+.card{background:white;padding:20px;margin-bottom:20px;border-radius:10px;}
+.logout{background:red;padding:8px 15px;border:none;color:white;border-radius:5px;}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <h2>Student Dashboard</h2>
+  <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <h3>My Marks</h3>
+    <div id="marks"></div>
+  </div>
+
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+const role = localStorage.getItem("role");
+
+if (!token || role !== "student") {
+  window.location.href = "login.html";
+}
+
+function logout(){
+  localStorage.clear();
+  window.location.href = "login.html";
+}
+
+async function loadMarks(){
+  const res = await fetch("http://localhost:5000/api/student/my-marks",{
+    headers:{ "Authorization":"Bearer "+token }
+  });
+
+  const data = await res.json();
+  let html="";
+
+  data.forEach(item=>{
+    html += `<p>${item.subject} - ${item.marks} marks - ${item.attendance}% attendance</p>`;
+  });
+
+  document.getElementById("marks").innerHTML = html;
+}
+
+loadMarks();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Dashboard</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#f4f6f9;
+}
+
+.nav{
+  background:#111216;
+  color:white;
+  padding:15px 30px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logout{
+  background:#e03131;
+  padding:8px 15px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  color:white;
+  font-weight:bold;
+}
+
+.container{
+  padding:30px;
+  display:flex;
+  flex-direction:column;
+  gap:30px;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.08);
+  overflow-x:auto;
+}
+
+.card h3{
+  margin-top:0;
+  margin-bottom:15px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+
+th{
+  background:#edf2ff;
+  padding:10px;
+  text-align:left;
+  white-space:nowrap;
+}
+
+td{
+  padding:10px;
+  border-bottom:1px solid #eee;
+  white-space:nowrap;
+}
+
+tr:hover{
+  background:#f8f9fa;
+}
+
+.loading{
+  text-align:center;
+  padding:15px;
+  color:#666;
+}
+
+.status-approved{
+  color:green;
+  font-weight:bold;
+}
+
+.status-pending{
+  color:#e03131;
+  font-weight:bold;
+}
+
+.action-btn{
+  padding:5px 10px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  font-size:12px;
+  margin-right:5px;
+}
+
+.edit-btn{
+  background:#fab005;
+}
+
+.delete-btn{
+  background:#e03131;
+  color:white;
+}
+</style>
+
+</head>
+<body>
+
+<div class="nav">
+  <h2>Admin Dashboard</h2>
+  <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+  <!-- ===================== TEACHERS ===================== -->
+  <div class="card">
+    <h3>Teachers</h3>
+    <div class="loading" id="teachersLoading">Loading teachers...</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Gender</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="teachersTable"></tbody>
+    </table>
+  </div>
+
+
+  <!-- ===================== STUDENTS ===================== -->
+  <div class="card">
+    <h3>Students</h3>
+    <div class="loading" id="studentsLoading">Loading students...</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Parent</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>DOB</th>
+          <th>Gender</th>
+          <th>Address</th>
+          <th>Grade</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="studentsTable"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+const role = localStorage.getItem("role");
+
+if (!token || role !== "admin") {
+  window.location.href = "login.html";
+}
+
+function logout(){
+  localStorage.clear();
+  window.location.href = "login.html";
+}
+
+/* ===============================
+   AUTO LOAD (Like useEffect)
+================================== */
+window.onload = function() {
+  loadTeachers();
+  loadStudents();
+};
+
+
+/* ===============================
+   LOAD TEACHERS
+================================== */
+async function loadTeachers(){
+  try {
+    const res = await fetch("http://localhost:4003/admin/teachers");
+    const teachers = await res.json();
+
+    document.getElementById("teachersLoading").style.display = "none";
+    const table = document.getElementById("teachersTable");
+    table.innerHTML = "";
+
+    teachers.forEach(t => {
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${t.name}</td>
+        <td>${t.email}</td>
+        <td>${t.phonenumber || "-"}</td>
+        <td>${t.gender || "-"}</td>
+        <td>
+          <button class="action-btn edit-btn" onclick="editTeacher('${t._id}')">Edit</button>
+          <button class="action-btn delete-btn" onclick="deleteTeacher('${t._id}')">Delete</button>
+        </td>
+      `;
+
+      table.appendChild(tr);
+    });
+
+  } catch (error) {
+    console.error("Error fetching teachers:", error);
+  }
+}
+
+
+/* ===============================
+   LOAD STUDENTS (usersModel)
+================================== */
+async function loadStudents(){
+  try {
+    const res = await fetch("http://localhost:4003/users");
+    const result = await res.json();
+
+    console.log("students", result);
+
+    const students = result.data; // ✅ FIX HERE
+
+    document.getElementById("studentsLoading").style.display = "none";
+    const table = document.getElementById("studentsTable");
+    table.innerHTML = "";
+
+    students.forEach(s => {
+
+      const dob = s.dob ? new Date(s.dob).toLocaleDateString() : "-";
+
+      const statusClass = s.Approved ? "status-approved" : "status-pending";
+      const statusText = s.Approved ? "Approved" : "Pending";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${s.name}</td>
+        <td>${s.parentName}</td>
+        <td>${s.email}</td>
+        <td>${s.phonenumber}</td>
+        <td>${dob}</td>
+        <td>${s.gender}</td>
+        <td>${s.address}</td>
+        <td>${s.grade}</td>
+        <td class="${statusClass}">${statusText}</td>
+      `;
+
+      table.appendChild(tr);
+    });
+
+  } catch (error) {
+    console.error("Error fetching students:", error);
+  }
+}
+
+
+
+/* ===============================
+   ACTION PLACEHOLDERS
+================================== */
+function editTeacher(id){
+  alert("Edit Teacher: " + id);
+}
+
+function deleteTeacher(id){
+  alert("Delete Teacher: " + id);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Teacher Dashboard</title>
+<style>
+body{margin:0;font-family:Arial;background:#eef2ff;}
+.nav{background:#4c6ef5;color:white;padding:15px;display:flex;justify-content:space-between;}
+.container{padding:30px;}
+.card{background:white;padding:20px;margin-bottom:20px;border-radius:10px;}
+input{padding:8px;margin:5px 0;width:100%;}
+button{padding:8px 15px;background:#4c6ef5;color:white;border:none;border-radius:5px;}
+.logout{background:red;}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <h2>Teacher Dashboard</h2>
+  <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <h3>Add / Update Marks</h3>
+    <input id="studentEmail" placeholder="Student Email">
+    <input id="subject" placeholder="Subject">
+    <input id="marks" placeholder="Marks">
+    <input id="attendance" placeholder="Attendance %">
+    <button onclick="addMarks()">Submit</button>
+  </div>
+
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+const role = localStorage.getItem("role");
+
+if (!token || role !== "teacher") {
+  window.location.href = "login.html";
+}
+
+function logout(){
+  localStorage.clear();
+  window.location.href = "login.html";
+}
+
+async function addMarks(){
+  const studentEmail=document.getElementById("studentEmail").value;
+  const subject=document.getElementById("subject").value;
+  const marks=document.getElementById("marks").value;
+  const attendance=document.getElementById("attendance").value;
+
+  await fetch("http://localhost:5000/api/teacher/add-marks",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":"Bearer "+token
+    },
+    body:JSON.stringify({studentEmail,subject,marks,attendance})
+  });
+
+  alert("Marks Saved");
+}
+</script>
+
+</body>
+</html>

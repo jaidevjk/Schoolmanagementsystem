@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teachers Management</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f0f4f8; }
+        h1 { text-align: center; color: #2c3e50; }
+        form, table { margin: 20px auto; width: 80%; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 5px 10px rgba(0,0,0,0.1);}
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        button { padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; margin: 2px;}
+        .delete-btn { background: #e74c3c; color: #fff; }
+        .edit-btn { background: #3498db; color: #fff; }
+        .save-btn { background: #2ecc71; color: #fff; }
+    </style>
+</head>
+<body>
+
+<h1>Teachers Management</h1>
+
+<form id="teacherForm">
+    <select id="userSelect" required>
+        <option value="">Select User</option>
+    </select>
+    <input type="text" id="subject" placeholder="Subject" required>
+    <button type="submit">Add Teacher</button>
+</form>
+
+<table id="teacherTable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Subject</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+const API_URL = "http://localhost:5000/api/teachers";
+const USER_API = "http://localhost:5000/api/users";
+const tableBody = document.querySelector("#teacherTable tbody");
+const userSelect = document.getElementById("userSelect");
+
+// Load users into dropdown
+async function loadUsers() {
+    const res = await fetch(USER_API);
+    const users = await res.json();
+    userSelect.innerHTML = '<option value="">Select User</option>';
+    users.forEach(u => {
+        userSelect.innerHTML += `<option value="${u._id}">${u.name} (${u.email})</option>`;
+    });
+}
+
+// Load teachers
+async function loadTeachers() {
+    const res = await fetch(API_URL);
+    const teachers = await res.json();
+    tableBody.innerHTML = "";
+    teachers.forEach(t => {
+        tableBody.innerHTML += `
+            <tr id="row-${t._id}">
+                <td>${t.userId?.name || ""}</td>
+                <td>${t.userId?.email || ""}</td>
+                <td id="subject-${t._id}">${t.subject}</td>
+                <td>
+                    <button class="edit-btn" onclick="editTeacher('${t._id}')">Edit</button>
+                    <button class="delete-btn" onclick="deleteTeacher('${t._id}')">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+// Add teacher
+document.getElementById("teacherForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const data = {
+        userId: userSelect.value,
+        subject: document.getElementById("subject").value
+    };
+    await fetch(API_URL, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(data)});
+    alert("Teacher added!");
+    loadTeachers();
+});
+
+// Delete teacher
+async function deleteTeacher(id) {
+    await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    alert("Teacher deleted!");
+    loadTeachers();
+}
+
+// Edit teacher
+function editTeacher(id) {
+    const currentSubject = document.getElementById(`subject-${id}`);
+    const oldValue = currentSubject.innerText;
+    currentSubject.innerHTML = `<input type="text" id="edit-${id}" value="${oldValue}"> <button class="save-btn" onclick="saveTeacher('${id}')">Save</button>`;
+}
+
+// Save updated teacher
+async function saveTeacher(id) {
+    const newSubject = document.getElementById(`edit-${id}`).value;
+    await fetch(`${API_URL}/${id}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ subject: newSubject }) });
+    alert("Teacher updated!");
+    loadTeachers();
+}
+
+loadUsers();
+loadTeachers();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 2px;
+        }
+
+        .approve { background: #27ae60; color: white; }
+        .admit { background: #2980b9; color: white; }
+        .old { background: #8e44ad; color: white; }
+        .delete { background: #c0392b; color: white; }
+
+        .status-pending { color: orange; font-weight: bold; }
+        .status-admitted { color: green; font-weight: bold; }
+        .status-yet { color: blue; font-weight: bold; }
+
+        .badge-old {
+            background: purple;
+            color: white;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .badge-new {
+            background: gray;
+            color: white;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<h2>Admin Student Management</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Parent</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>DOB</th>
+            <th>Gender</th>
+            <th>Grade</th>
+            <th>Status</th>
+            <th>Admitted On</th>
+            <th>Type</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="studentsTable"></tbody>
+</table>
+
+
+<script>
+
+async function loadStudents() {
+    try {
+        const res = await fetch("http://localhost:4003/users");
+        const result = await res.json();
+
+        const students = result.data || [];
+
+        const table = document.getElementById("studentsTable");
+        table.innerHTML = "";
+
+        students.forEach(s => {
+
+            const dob = s.dob ? new Date(s.dob).toLocaleDateString() : "-";
+            const admittedDate = s.admittedAt ? new Date(s.admittedAt).toLocaleDateString() : "-";
+
+            let statusClass = "status-pending";
+            if (s.AdmissionStatus === "Admitted") statusClass = "status-admitted";
+            if (s.AdmissionStatus === "Yet to be Admitted") statusClass = "status-yet";
+
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                <td>${s.name}</td>
+                <td>${s.parentName}</td>
+                <td>${s.email}</td>
+                <td>${s.phonenumber}</td>
+                <td>${dob}</td>
+                <td>${s.gender}</td>
+                <td>${s.grade}</td>
+                <td class="${statusClass}">${s.AdmissionStatus}</td>
+                <td>${admittedDate}</td>
+                <td>
+                    ${s.isOldStudent 
+                        ? '<span class="badge-old">Old Student</span>' 
+                        : '<span class="badge-new">New</span>'}
+                </td>
+                <td>
+                    ${!s.Approved 
+                        ? `<button class="btn approve" onclick="approveStudent('${s._id}')">Approve</button>` 
+                        : ''}
+
+                    ${s.AdmissionStatus === "Yet to be Admitted" 
+                        ? `<button class="btn admit" onclick="admitStudent('${s._id}')">Admit</button>` 
+                        : ''}
+
+                    ${!s.isOldStudent 
+                        ? `<button class="btn old" onclick="markOld('${s._id}')">Mark Old</button>` 
+                        : ''}
+
+                    <button class="btn delete" onclick="deleteStudent('${s._id}')">Delete</button>
+                </td>
+            `;
+
+            table.appendChild(tr);
+        });
+
+    } catch (error) {
+        console.error("Error loading students:", error);
+    }
+}
+
+
+// ==============================
+// ACTION FUNCTIONS
+// ==============================
+
+async function approveStudent(id) {
+    await fetch(`http://localhost:4003/users/approve/${id}`, {
+        method: "PUT"
+    });
+    loadStudents();
+}
+
+async function admitStudent(id) {
+    await fetch(`http://localhost:4003/users/admit/${id}`, {
+        method: "PUT"
+    });
+    loadStudents();
+}
+
+async function markOld(id) {
+    await fetch(`http://localhost:4003/users/mark-old/${id}`, {
+        method: "PUT"
+    });
+    loadStudents();
+}
+
+async function deleteStudent(id) {
+    if(confirm("Are you sure you want to delete this student?")) {
+        await fetch(`http://localhost:4003/users/${id}`, {
+            method: "DELETE"
+        });
+        loadStudents();
+    }
+}
+
+
+// Load when page opens
+window.onload = loadStudents;
+
+</script>
+
+</body>
+</html>

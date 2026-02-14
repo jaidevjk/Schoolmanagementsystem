@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Meera Nair",
+    "email": "meera@teacher.com",
+    "password": "teacher123",
+    "role": "teacher"
+  },
+  {
+    "name": "Suresh Kumar",
+    "email": "suresh@teacher.com",
+    "password": "teacher123",
+    "role": "teacher"
+  },
+  {
+    "name": "Priya Rao",
+    "email": "priya@teacher.com",
+    "password": "teacher123",
+    "role": "teacher"
+  },
+  {
+    "name": "Rahul Verma",
+    "email": "rahul@teacher.com",
+    "password": "teacher123",
+    "role": "teacher"
+  }
+]
