@@ -1,0 +1,127 @@
+/* Login.css */
+.login-body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #eaeaf0;
+    font-family: Arial, sans-serif;
+}
+
+.login-container {
+    width: 900px;
+    height: 520px;
+    display: flex;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    background: white;
+    /* Added based on typical design */
+}
+
+.login-left {
+    width: 40%;
+    background: #111216;
+    color: white;
+    padding: 60px 40px;
+}
+
+.login-left h1 {
+    margin-bottom: 10px;
+    font-size: 2em;
+    /* Explicitly set as per standard h1 */
+}
+
+.login-left p {
+    font-size: 14px;
+    color: #aaa;
+    margin-bottom: 40px;
+}
+
+.input-box {
+    margin-bottom: 25px;
+}
+
+.input-box input,
+.input-box select {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: white;
+    font-size: 15px;
+}
+
+.input-box input::placeholder {
+    color: #777;
+}
+
+.login-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    background: #9b6ef3;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.login-btn:hover {
+    background: #8a5de8;
+}
+
+.error-msg {
+    margin-top: 15px;
+    color: #ff6b6b;
+    font-size: 14px;
+}
+
+.login-right {
+    width: 60%;
+    background: #9b6ef3;
+    padding: 60px;
+    color: white;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.login-right h1 {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.login-right p {
+    font-size: 15px;
+    opacity: 0.9;
+}
+
+.illustration {
+    position: absolute;
+    bottom: 20px;
+    right: 40px;
+    width: 300px;
+}
+
+@media(max-width: 900px) {
+    .login-container {
+        flex-direction: column;
+        height: auto;
+        width: 90%;
+    }
+
+    .login-left,
+    .login-right {
+        width: 100%;
+    }
+
+    .illustration {
+        position: static;
+        width: 220px;
+        margin-top: 30px;
+    }
+}
