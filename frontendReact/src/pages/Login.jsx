@@ -26,11 +26,13 @@ const Login = () => {
             const data = await res.json();
 
             if (res.ok) {
+                localStorage.setItem("token", data.token);
                 localStorage.setItem("role", data.user.role);
                 localStorage.setItem("name", data.user.name);
+                localStorage.setItem("id", data.user.id);
 
                 const role = data.user.role.toLowerCase();
-                if (role === "admin") navigate("/admin-dashboard");
+                if (role === "admin" || role === "superadmin") navigate("/admin-dashboard");
                 else if (role === "teacher") navigate("/teacher-dashboard");
                 else navigate("/student-dashboard");
             } else {

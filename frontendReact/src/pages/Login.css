@@ -1,23 +1,25 @@
 /* Login.css */
 .login-body {
     margin: 0;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     background: #eaeaf0;
     font-family: Arial, sans-serif;
+    padding: 20px;
 }
 
 .login-container {
-    width: 900px;
-    height: 520px;
+    width: 100%;
+    max-width: 900px;
+    height: auto;
+    min-height: 520px;
     display: flex;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
     background: white;
-    /* Added based on typical design */
 }
 
 .login-left {
@@ -30,7 +32,6 @@
 .login-left h1 {
     margin-bottom: 10px;
     font-size: 2em;
-    /* Explicitly set as per standard h1 */
 }
 
 .login-left p {
@@ -52,6 +53,7 @@
     border-radius: 6px;
     color: white;
     font-size: 15px;
+    box-sizing: border-box;
 }
 
 .input-box input::placeholder {
@@ -68,6 +70,7 @@
     color: white;
     font-size: 16px;
     cursor: pointer;
+    transition: background 0.3s ease;
 }
 
 .login-btn:hover {
@@ -88,40 +91,115 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .login-right h1 {
     font-size: 36px;
     margin-bottom: 10px;
+    text-align: center;
 }
 
 .login-right p {
     font-size: 15px;
     opacity: 0.9;
+    text-align: center;
+    margin-bottom: 30px;
 }
 
 .illustration {
-    position: absolute;
-    bottom: 20px;
-    right: 40px;
     width: 300px;
+    height: auto;
+    max-width: 100%;
 }
 
-@media(max-width: 900px) {
+/* Tablet - 900px and below */
+@media (max-width: 900px) {
     .login-container {
         flex-direction: column;
-        height: auto;
-        width: 90%;
+        min-height: auto;
     }
 
-    .login-left,
+    .login-left {
+        width: 100%;
+        padding: 40px 30px;
+    }
+
+    .login-left h1 {
+        font-size: 1.5em;
+    }
+
     .login-right {
         width: 100%;
+        padding: 40px 30px;
+    }
+
+    .login-right h1 {
+        font-size: 28px;
     }
 
     .illustration {
-        position: static;
         width: 220px;
-        margin-top: 30px;
+    }
+}
+
+/* Mobile - 640px and below */
+@media (max-width: 640px) {
+    .login-body {
+        padding: 10px;
+    }
+
+    .login-container {
+        border-radius: 8px;
+    }
+
+    .login-left {
+        padding: 30px 20px;
+    }
+
+    .login-left h1 {
+        font-size: 1.3em;
+    }
+
+    .login-left p {
+        font-size: 13px;
+        margin-bottom: 30px;
+    }
+
+    .input-box {
+        margin-bottom: 20px;
+    }
+
+    .input-box input,
+    .input-box select {
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    .login-btn {
+        margin-top: 15px;
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .error-msg {
+        font-size: 12px;
+    }
+
+    .login-right {
+        padding: 30px 20px;
+    }
+
+    .login-right h1 {
+        font-size: 22px;
+    }
+
+    .login-right p {
+        font-size: 13px;
+    }
+
+    .illustration {
+        width: 150px;
     }
 }

@@ -29,13 +29,17 @@ const usersController = require('../controller/usersController');
 // ======================================
 // GET ALL USERS
 // ======================================
-const { verifyTokenAndAdmin, verifyTokenAndTeacher, verifyTokenAndSuperAdmin } = require("../middlewares/auth");
+const { verifyTokenAndAdmin, verifyTokenAndTeacher, verifyTokenAndSuperAdmin, verifyToken } = require("../middlewares/auth");
 
 // ======================================
 // GET ALL USERS
 // ======================================
 router.get('/', verifyTokenAndTeacher, usersController.listUsers); // Teacher/Admin/SuperAdmin
 
+// ======================================
+// GET SINGLE USER
+// ======================================
+router.get('/:id', verifyTokenAndTeacher, usersController.getUser); // Teacher/Admin/SuperAdmin
 
 // ======================================
 // CREATE NEW USER (Application Form)
@@ -68,9 +72,15 @@ router.put('/mark-old/:id', verifyTokenAndAdmin, usersController.markOldStudent)
 
 
 // ======================================
+// UPDATE USER (Teacher can update students)
+// ======================================
+router.put('/:id', verifyTokenAndTeacher, usersController.updateUser); // Teacher/Admin/SuperAdmin
+
+
+// ======================================
 // DELETE USER
 // ======================================
-router.delete('/:id', verifyTokenAndSuperAdmin, usersController.deleteUser); // SuperAdmin Only
+router.delete('/:id', verifyTokenAndTeacher, usersController.deleteUser); // Teacher/Admin/SuperAdmin
 
 
 // ======================================

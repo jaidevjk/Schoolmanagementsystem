@@ -1,13 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [teachers, setTeachers] = useState([]);
+    const [showTeacherModal, setShowTeacherModal] = useState(false);
+    const [editingTeacher, setEditingTeacher] = useState(null);
+
+    const [teacherForm, setTeacherForm] = useState({
+        name: '',
+        email: '',
+        password: '',
+        subject: '',
+        role: 'Teacher'
+    });
 
     useEffect(() => {
         loadData();
+        loadTeachers();
     }, []);
 
     const logout = () => {
@@ -18,227 +31,374 @@ const AdminDashboard = () => {
         }
     };
 
+    /* ================= USERS ================= */
+
     const loadData = async () => {
         try {
-            const res = await fetch("http://localhost:4003/users");
+            const token = localStorage.getItem("token");
+            const res = await fetch("http://localhost:4003/users", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
             const result = await res.json();
-            const data = result.data || result || [];
+            const data = Array.isArray(result) ? result :
+                Array.isArray(result.data) ? result.data : [];
+
             setUsers(data);
-            loadTeachers();
         } catch (error) {
             console.error("Error loading users:", error);
+            setUsers([]);
         }
     };
+
+    /* ================= TEACHERS ================= */
 
     const loadTeachers = async () => {
         try {
-            const res = await fetch("http://localhost:4003/admin/teachers");
+            const token = localStorage.getItem("token");
+            const res = await fetch("http://localhost:4003/admin/teachers", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
             const result = await res.json();
-            const data = result.data || result || [];
+            const data = Array.isArray(result) ? result :
+                Array.isArray(result.data) ? result.data : [];
+
             setTeachers(data);
         } catch (error) {
             console.error("Teachers not loading", error);
+            setTeachers([]);
         }
     };
 
-    // Actions
-    const approveStudent = async (id) => {
-        await fetch(`http://localhost:4003/users/approve/${id}`, { method: "PUT" });
-        loadData();
+    const openTeacherModal = (teacher = null) => {
+        if (teacher) {
+            setEditingTeacher(teacher);
+            setTeacherForm({
+                name: teacher.name,
+                email: teacher.email,
+                password: '',
+                subject: teacher.subject || '',
+                role: 'Teacher'
+            });
+        } else {
+            setEditingTeacher(null);
+            setTeacherForm({
+                name: '',
+                email: '',
+                password: '',
+                subject: '',
+                role: 'Teacher'
+            });
+        }
+        setShowTeacherModal(true);
     };
 
-    const admitStudent = async (id) => {
-        await fetch(`http://localhost:4003/users/admit/${id}`, { method: "PUT" });
-        loadData();
+    const closeTeacherModal = () => {
+        setShowTeacherModal(false);
+        setEditingTeacher(null);
+        setTeacherForm({
+            name: '',
+            email: '',
+            password: '',
+            subject: '',
+            role: 'Teacher'
+        });
     };
 
-    const markOld = async (id) => {
-        await fetch(`http://localhost:4003/users/mark-old/${id}`, { method: "PUT" });
-        loadData();
+    const handleTeacherFormChange = (e) => {
+        setTeacherForm({ ...teacherForm, [e.target.name]: e.target.value });
     };
 
-    const deleteStudent = async (id) => {
-        if (window.confirm("Delete this student?")) {
-            await fetch(`http://localhost:4003/users/${id}`, { method: "DELETE" });
-            loadData();
+    /* ================= CREATE ================= */
+
+    const createTeacher = async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem("token");
+
+        try {
+            const res = await fetch("http://localhost:4003/admin", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(teacherForm)
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("Teacher created successfully");
+
+                // 🔥 instant UI update
+                setTeachers(prev => [...prev, data]);
+
+                closeTeacherModal();
+            } else {
+                alert(data.message || "Error creating teacher");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error creating teacher");
         }
     };
 
-    // Filtered Lists
-    const pendingStudents = users.filter(u => u.AdmissionStatus === "Pending" && !u.isOldStudent);
-    const approvedStudents = users.filter(u => u.AdmissionStatus === "Yet to be Admitted" && !u.isOldStudent);
-    const admittedStudents = users.filter(u => u.AdmissionStatus === "Admitted" && !u.isOldStudent);
-    const oldStudents = users.filter(u => u.isOldStudent);
+    /* ================= UPDATE ================= */
+
+    const updateTeacher = async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem("token");
+
+        try {
+            const updateData = { ...teacherForm };
+            if (!updateData.password) delete updateData.password;
+
+            const res = await fetch(
+                `http://localhost:4003/admin/teachers/${editingTeacher._id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updateData)
+                }
+            );
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("Teacher updated successfully");
+
+                setTeachers(prev =>
+                    prev.map(t =>
+                        t._id === editingTeacher._id ? data : t
+                    )
+                );
+
+                closeTeacherModal();
+            } else {
+                alert(data.message || "Error updating teacher");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error updating teacher");
+        }
+    };
+
+    /* ================= DELETE ================= */
+
+    const deleteTeacher = async (id) => {
+        if (!window.confirm("Delete this teacher?")) return;
+
+        const token = localStorage.getItem("token");
+
+        try {
+            const res = await fetch(
+                `http://localhost:4003/admin/teachers/${id}`,
+                {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+
+            if (res.ok) {
+                setTeachers(prev => prev.filter(t => t._id !== id));
+                alert("Teacher deleted successfully");
+            } else {
+                alert("Error deleting teacher");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error deleting teacher");
+        }
+    };
+
+    /* ================= FILTERED STUDENTS ================= */
+
+    const pendingStudents = users.filter(
+        u => u.AdmissionStatus === "Pending" && !u.isOldStudent
+    );
 
     return (
-        <div className="min-h-screen bg-[#eef2f7] p-8 font-sans">
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
-                <button
-                    onClick={logout}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm transition-colors"
-                >
-                    Logout
-                </button>
-            </div>
+        <div className="flex flex-col min-h-screen">
+            <Header />
 
-            {/* ==================== TEACHERS ==================== */}
-            <div className="bg-white p-5 mb-10 rounded-xl shadow-sm border border-gray-100">
-                <div className="text-lg font-bold mb-4 pb-2 border-b-2 border-gray-100 text-gray-700">Teachers</div>
-                <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr className="bg-[#1f2d3d] text-white">
-                                <th className="p-3 text-left text-sm font-semibold">Name</th>
-                                <th className="p-3 text-left text-sm font-semibold">Email</th>
-                                <th className="p-3 text-left text-sm font-semibold">Subject</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {teachers.length > 0 ? teachers.map((t, idx) => (
-                                <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
-                                    <td className="p-3 text-sm text-gray-600">{t.name}</td>
-                                    <td className="p-3 text-sm text-gray-600">{t.email}</td>
-                                    <td className="p-3 text-sm text-gray-600">{t.subject || "-"}</td>
-                                </tr>
-                            )) : (
-                                <tr><td colSpan="3" className="p-3 text-center text-gray-500">No teachers found</td></tr>
-                            )}
-                        </tbody>
-                    </table>
+            <div className="flex-grow bg-[#eef2f7] p-8">
+                <div className="flex justify-between mb-6">
+                    <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+                    <button
+                        onClick={logout}
+                        className="bg-red-500 text-white px-4 py-2 rounded"
+                    >
+                        Logout
+                    </button>
                 </div>
-            </div>
 
-            {/* ==================== PENDING ==================== */}
-            <div className="bg-white p-5 mb-10 rounded-xl shadow-sm border border-gray-100">
-                <div className="text-lg font-bold mb-4 pb-2 border-b-2 border-gray-100 text-gray-700">Pending Applications</div>
-                <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr className="bg-[#1f2d3d] text-white">
-                                <th className="p-3 text-left text-sm font-semibold">Name</th>
-                                <th className="p-3 text-left text-sm font-semibold">Parent</th>
-                                <th className="p-3 text-left text-sm font-semibold">Email</th>
-                                <th className="p-3 text-left text-sm font-semibold">Grade</th>
-                                <th className="p-3 text-left text-sm font-semibold">Status</th>
-                                <th className="p-3 text-left text-sm font-semibold">Actions</th>
+                {/* ================= TEACHERS ================= */}
+                <div className="bg-white p-5 mb-10 rounded shadow">
+                    <div className="flex justify-between mb-4">
+                        <h2 className="text-lg font-bold">Teachers</h2>
+                        <button
+                            onClick={() => openTeacherModal()}
+                            className="bg-blue-500 text-white px-4 py-2 rounded"
+                        >
+                            + Add Teacher
+                        </button>
+                    </div>
+
+                    <table className="w-full border">
+                        <thead className="bg-gray-800 text-white">
+                            <tr>
+                                <th className="p-2">Name</th>
+                                <th>Email</th>
+                                <th>Subject</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {pendingStudents.length > 0 ? pendingStudents.map((u) => (
-                                <tr key={u._id} className="border-b border-gray-100 hover:bg-gray-50">
-                                    <td className="p-3 text-sm text-gray-600">{u.name}</td>
-                                    <td className="p-3 text-sm text-gray-600">{u.parentName}</td>
-                                    <td className="p-3 text-sm text-gray-600">{u.email}</td>
-                                    <td className="p-3 text-sm text-gray-600">{u.grade}</td>
-                                    <td className="p-3"><span className="px-2 py-1 rounded-full text-xs font-bold bg-yellow-500 text-white">Pending</span></td>
-                                    <td className="p-3">
-                                        <button onClick={() => approveStudent(u._id)} className="mr-2 px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600">Approve</button>
-                                        <button onClick={() => deleteStudent(u._id)} className="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600">Delete</button>
+                            {teachers.length > 0 ? (
+                                teachers.map(t => (
+                                    <tr key={t._id} className="border">
+                                        <td className="p-2">{t.name}</td>
+                                        <td>{t.email}</td>
+                                        <td>{t.subject || "-"}</td>
+                                        <td className="space-x-2">
+                                            <button
+                                                onClick={() => openTeacherModal(t)}
+                                                className="bg-blue-500 text-white px-2 py-1 rounded"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={() => deleteTeacher(t._id)}
+                                                className="bg-red-500 text-white px-2 py-1 rounded"
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="4" className="text-center p-3">
+                                        No teachers found
                                     </td>
                                 </tr>
-                            )) : (
-                                <tr><td colSpan="6" className="p-3 text-center text-gray-500">No pending applications</td></tr>
                             )}
                         </tbody>
                     </table>
                 </div>
-            </div>
 
-            {/* ==================== APPROVED ==================== */}
-            <div className="bg-white p-5 mb-10 rounded-xl shadow-sm border border-gray-100">
-                <div className="text-lg font-bold mb-4 pb-2 border-b-2 border-gray-100 text-gray-700">Approved - Yet to be Admitted</div>
-                <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr className="bg-[#1f2d3d] text-white">
-                                <th className="p-3 text-left text-sm font-semibold">Name</th>
-                                <th className="p-3 text-left text-sm font-semibold">Grade</th>
-                                <th className="p-3 text-left text-sm font-semibold">Status</th>
-                                <th className="p-3 text-left text-sm font-semibold">Actions</th>
+                {/* ================= PENDING STUDENTS ================= */}
+                <div className="bg-white p-5 rounded shadow">
+                    <h2 className="text-lg font-bold mb-4">Pending Students</h2>
+
+                    <table className="w-full border">
+                        <thead className="bg-gray-800 text-white">
+                            <tr>
+                                <th className="p-2">Name</th>
+                                <th>Email</th>
+                                <th>Grade</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {approvedStudents.length > 0 ? approvedStudents.map((u) => (
-                                <tr key={u._id} className="border-b border-gray-100 hover:bg-gray-50">
-                                    <td className="p-3 text-sm text-gray-600">{u.name}</td>
-                                    <td className="p-3 text-sm text-gray-600">{u.grade}</td>
-                                    <td className="p-3"><span className="px-2 py-1 rounded-full text-xs font-bold bg-blue-500 text-white">Approved</span></td>
-                                    <td className="p-3">
-                                        <button onClick={() => admitStudent(u._id)} className="mr-2 px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">Admit</button>
-                                        <button onClick={() => markOld(u._id)} className="px-3 py-1 bg-purple-500 text-white rounded text-xs hover:bg-purple-600">Mark Old</button>
+                            {pendingStudents.length > 0 ? (
+                                pendingStudents.map(u => (
+                                    <tr key={u._id} className="border">
+                                        <td className="p-2">{u.name}</td>
+                                        <td>{u.email}</td>
+                                        <td>{u.grade}</td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="3" className="text-center p-3">
+                                        No pending students
                                     </td>
                                 </tr>
-                            )) : (
-                                <tr><td colSpan="4" className="p-3 text-center text-gray-500">No approved students</td></tr>
                             )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            {/* ==================== ADMITTED ==================== */}
-            <div className="bg-white p-5 mb-10 rounded-xl shadow-sm border border-gray-100">
-                <div className="text-lg font-bold mb-4 pb-2 border-b-2 border-gray-100 text-gray-700">Admitted Students</div>
-                <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr className="bg-[#1f2d3d] text-white">
-                                <th className="p-3 text-left text-sm font-semibold">Name</th>
-                                <th className="p-3 text-left text-sm font-semibold">Grade</th>
-                                <th className="p-3 text-left text-sm font-semibold">Admitted On</th>
-                                <th className="p-3 text-left text-sm font-semibold">Status</th>
-                                <th className="p-3 text-left text-sm font-semibold">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {admittedStudents.length > 0 ? admittedStudents.map((u) => (
-                                <tr key={u._id} className="border-b border-gray-100 hover:bg-gray-50">
-                                    <td className="p-3 text-sm text-gray-600">{u.name}</td>
-                                    <td className="p-3 text-sm text-gray-600">{u.grade}</td>
-                                    <td className="p-3 text-sm text-gray-600">{u.admittedAt ? new Date(u.admittedAt).toLocaleDateString() : "-"}</td>
-                                    <td className="p-3"><span className="px-2 py-1 rounded-full text-xs font-bold bg-green-500 text-white">Admitted</span></td>
-                                    <td className="p-3">
-                                        <button onClick={() => deleteStudent(u._id)} className="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600">Delete</button>
-                                    </td>
-                                </tr>
-                            )) : (
-                                <tr><td colSpan="5" className="p-3 text-center text-gray-500">No admitted students</td></tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            {/* ================= MODAL ================= */}
+            {showTeacherModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-6 rounded w-96">
+                        <h2 className="text-lg font-bold mb-4">
+                            {editingTeacher ? "Edit Teacher" : "Add Teacher"}
+                        </h2>
 
-            {/* ==================== OLD ==================== */}
-            <div className="bg-white p-5 mb-10 rounded-xl shadow-sm border border-gray-100">
-                <div className="text-lg font-bold mb-4 pb-2 border-b-2 border-gray-100 text-gray-700">Old Students</div>
-                <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr className="bg-[#1f2d3d] text-white">
-                                <th className="p-3 text-left text-sm font-semibold">Name</th>
-                                <th className="p-3 text-left text-sm font-semibold">Grade</th>
-                                <th className="p-3 text-left text-sm font-semibold">Admitted On</th>
-                                <th className="p-3 text-left text-sm font-semibold">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {oldStudents.length > 0 ? oldStudents.map((u) => (
-                                <tr key={u._id} className="border-b border-gray-100 hover:bg-gray-50">
-                                    <td className="p-3 text-sm text-gray-600">{u.name}</td>
-                                    <td className="p-3 text-sm text-gray-600">{u.grade}</td>
-                                    <td className="p-3 text-sm text-gray-600">{u.admittedAt ? new Date(u.admittedAt).toLocaleDateString() : "-"}</td>
-                                    <td className="p-3"><span className="px-2 py-1 rounded-full text-xs font-bold bg-purple-600 text-white">Old</span></td>
-                                </tr>
-                            )) : (
-                                <tr><td colSpan="4" className="p-3 text-center text-gray-500">No old students</td></tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        <form
+                            onSubmit={editingTeacher ? updateTeacher : createTeacher}
+                            className="space-y-3"
+                        >
+                            <input
+                                type="text"
+                                name="name"
+                                value={teacherForm.name}
+                                onChange={handleTeacherFormChange}
+                                placeholder="Name"
+                                className="w-full border p-2 rounded"
+                                required
+                            />
 
+                            <input
+                                type="email"
+                                name="email"
+                                value={teacherForm.email}
+                                onChange={handleTeacherFormChange}
+                                placeholder="Email"
+                                className="w-full border p-2 rounded"
+                                required
+                            />
+
+                            {!editingTeacher && (
+                                <input
+                                    type="password"
+                                    name="password"
+                                    value={teacherForm.password}
+                                    onChange={handleTeacherFormChange}
+                                    placeholder="Password"
+                                    className="w-full border p-2 rounded"
+                                    required
+                                />
+                            )}
+
+                            <input
+                                type="text"
+                                name="subject"
+                                value={teacherForm.subject}
+                                onChange={handleTeacherFormChange}
+                                placeholder="Subject"
+                                className="w-full border p-2 rounded"
+                            />
+
+                            <div className="flex gap-2">
+                                <button
+                                    type="submit"
+                                    className="flex-1 bg-blue-500 text-white py-2 rounded"
+                                >
+                                    {editingTeacher ? "Update" : "Create"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={closeTeacherModal}
+                                    className="flex-1 bg-gray-400 text-white py-2 rounded"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            <Footer />
         </div>
     );
 };

@@ -13,6 +13,7 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var adminRuter = require('./routes/admin');
+var marksRouter = require('./routes/marks');
 
 var gallery1Ruter = require('./routes/gallery1');
 var enquiryRuter = require('./routes/enquirey');
@@ -88,6 +89,7 @@ app.use(express.static(path.join(__dirname, 'client','build')));*/
 //app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/admin', adminRuter);
+app.use('/marks', marksRouter);
 app.use('/gallery1', gallery1Ruter);
 app.use('/enquiry', enquiryRuter);
 app.use('/contactusenquiry', contactusRuter);
