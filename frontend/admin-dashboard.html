@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Admin Dashboard</title>
     <style>
-
         body {
             font-family: 'Segoe UI', sans-serif;
             background: #eef2f7;
@@ -37,7 +37,7 @@
             padding: 20px;
             margin-bottom: 40px;
             border-radius: 12px;
-            box-shadow: 0px 4px 15px rgba(0,0,0,0.08);
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
         }
 
         .section-title {
@@ -79,10 +79,25 @@
             margin: 2px;
         }
 
-        .approve { background: #2ecc71; color: white; }
-        .admit { background: #3498db; color: white; }
-        .old { background: #9b59b6; color: white; }
-        .delete { background: #e74c3c; color: white; }
+        .approve {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .admit {
+            background: #3498db;
+            color: white;
+        }
+
+        .old {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .delete {
+            background: #e74c3c;
+            color: white;
+        }
 
         .badge {
             padding: 4px 8px;
@@ -91,132 +106,146 @@
             font-weight: bold;
         }
 
-        .badge-pending { background: #f39c12; color: white; }
-        .badge-approved { background: #3498db; color: white; }
-        .badge-admitted { background: #2ecc71; color: white; }
-        .badge-old { background: #8e44ad; color: white; }
+        .badge-pending {
+            background: #f39c12;
+            color: white;
+        }
 
+        .badge-approved {
+            background: #3498db;
+            color: white;
+        }
+
+        .badge-admitted {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .badge-old {
+            background: #8e44ad;
+            color: white;
+        }
     </style>
 </head>
 
 <body>
 
-<div class="header">
-    <h1>Admin Dashboard</h1>
-    <button class="logout-btn" onclick="logout()">Logout</button>
-</div>
+    <div class="header">
+        <h1>Admin Dashboard</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
 
-<!-- ==================== TEACHERS ==================== -->
-<div class="section">
-    <div class="section-title">Teachers</div>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>              
-                <th>Subject</th>
-            </tr>
-        </thead>
-        <tbody id="teachersTable"></tbody>
-    </table>
-</div>
+    <!-- ==================== TEACHERS ==================== -->
+    <div class="section">
+        <div class="section-title">Teachers</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                </tr>
+            </thead>
+            <tbody id="teachersTable"></tbody>
+        </table>
+    </div>
 
-<!-- ==================== PENDING ==================== -->
-<div class="section">
-    <div class="section-title">Pending Applications</div>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Parent</th>
-                <th>Email</th>
-                <th>Grade</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="pendingTable"></tbody>
-    </table>
-</div>
+    <!-- ==================== PENDING ==================== -->
+    <div class="section">
+        <div class="section-title">Pending Applications</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Parent</th>
+                    <th>Email</th>
+                    <th>Grade</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="pendingTable"></tbody>
+        </table>
+    </div>
 
-<!-- ==================== APPROVED ==================== -->
-<div class="section">
-    <div class="section-title">Approved - Yet to be Admitted</div>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Grade</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="approvedTable"></tbody>
-    </table>
-</div>
+    <!-- ==================== APPROVED ==================== -->
+    <div class="section">
+        <div class="section-title">Approved - Yet to be Admitted</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Grade</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="approvedTable"></tbody>
+        </table>
+    </div>
 
-<!-- ==================== ADMITTED ==================== -->
-<div class="section">
-    <div class="section-title">Admitted Students</div>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Grade</th>
-                <th>Admitted On</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="admittedTable"></tbody>
-    </table>
-</div>
+    <!-- ==================== ADMITTED ==================== -->
+    <div class="section">
+        <div class="section-title">Admitted Students</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Grade</th>
+                    <th>Admitted On</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="admittedTable"></tbody>
+        </table>
+    </div>
 
-<!-- ==================== OLD ==================== -->
-<div class="section">
-    <div class="section-title">Old Students</div>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Grade</th>
-                <th>Admitted On</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody id="oldTable"></tbody>
-    </table>
-</div>
-
-
-
-<script>
-
-// ================= LOGOUT FUNCTION =================
-function logout() {
-    if(confirm("Are you sure you want to logout?")) {
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = "login.html";  // change if your login file name is different
-    }
-}
+    <!-- ==================== OLD ==================== -->
+    <div class="section">
+        <div class="section-title">Old Students</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Grade</th>
+                    <th>Admitted On</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="oldTable"></tbody>
+        </table>
+    </div>
 
 
-// ================= LOAD DATA =================
-async function loadData() {
-    const res = await fetch("http://localhost:4003/users");
-    const result = await res.json();
-    const users = result.data || result || [];
 
-    document.getElementById("pendingTable").innerHTML = "";
-    document.getElementById("approvedTable").innerHTML = "";
-    document.getElementById("admittedTable").innerHTML = "";
-    document.getElementById("oldTable").innerHTML = "";
+    <script>
 
-    users.forEach(u => {
+        // ================= LOGOUT FUNCTION =================
+        function logout() {
+            if (confirm("Are you sure you want to logout?")) {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "login.html";  // change if your login file name is different
+            }
+        }
 
-        if (u.isOldStudent) {
-            document.getElementById("oldTable").innerHTML += `
+
+        // ================= LOAD DATA =================
+        async function loadData() {
+            const token = localStorage.getItem('token') || '';
+            const res = await fetch("http://localhost:5001/api/enquiry", { headers: { 'Authorization': 'Bearer ' + token } });
+            const users = await res.json();
+
+            document.getElementById("pendingTable").innerHTML = "";
+            document.getElementById("approvedTable").innerHTML = "";
+            document.getElementById("admittedTable").innerHTML = "";
+            document.getElementById("oldTable").innerHTML = "";
+
+            users.forEach(u => {
+
+                if (u.isOldStudent) {
+                    document.getElementById("oldTable").innerHTML += `
                 <tr>
                     <td>${u.name}</td>
                     <td>${u.grade}</td>
@@ -224,10 +253,10 @@ async function loadData() {
                     <td><span class="badge badge-old">Old</span></td>
                 </tr>
             `;
-        }
+                }
 
-        else if (u.AdmissionStatus === "Pending") {
-            document.getElementById("pendingTable").innerHTML += `
+                else if (u.admissionStatus === "pending") {
+                    document.getElementById("pendingTable").innerHTML += `
                 <tr>
                     <td>${u.name}</td>
                     <td>${u.parentName}</td>
@@ -240,10 +269,10 @@ async function loadData() {
                     </td>
                 </tr>
             `;
-        }
+                }
 
-        else if (u.AdmissionStatus === "Yet to be Admitted") {
-            document.getElementById("approvedTable").innerHTML += `
+                else if (u.admissionStatus === "approved") {
+                    document.getElementById("approvedTable").innerHTML += `
                 <tr>
                     <td>${u.name}</td>
                     <td>${u.grade}</td>
@@ -254,81 +283,113 @@ async function loadData() {
                     </td>
                 </tr>
             `;
+                }
+
+                else if (u.admissionStatus === "admitted") {
+                    // only show recently admitted (last 7 days)
+                    const admittedDate = u.admittedAt ? new Date(u.admittedAt) : null;
+                    if (admittedDate) {
+                        const sevenDaysAgo = new Date();
+                        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                        if (admittedDate >= sevenDaysAgo) {
+                            document.getElementById("admittedTable").innerHTML += `
+                        <tr>
+                            <td>${u.name}</td>
+                            <td>${u.grade}</td>
+                            <td>${u.admittedAt ? new Date(u.admittedAt).toLocaleDateString() : "-"}</td>
+                            <td><span class="badge badge-admitted">Admitted</span></td>
+                            <td>
+                                <button class="btn delete" onclick="deleteStudent('${u._id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                        }
+                    }
+                }
+
+            });
+
+            loadTeachers();
         }
 
-        else if (u.AdmissionStatus === "Admitted") {
-            document.getElementById("admittedTable").innerHTML += `
-                <tr>
-                    <td>${u.name}</td>
-                    <td>${u.grade}</td>
-                    <td>${u.admittedAt ? new Date(u.admittedAt).toLocaleDateString() : "-"}</td>
-                    <td><span class="badge badge-admitted">Admitted</span></td>
-                    <td>
-                        <button class="btn delete" onclick="deleteStudent('${u._id}')">Delete</button>
-                    </td>
-                </tr>
-            `;
-        }
 
-    });
+        // ================= TEACHERS =================
+        async function loadTeachers() {
+            try {
+                const token = localStorage.getItem('token') || '';
+                const res = await fetch("http://localhost:5001/api/teachers", { headers: { 'Authorization': 'Bearer ' + token } });
+                const teachers = await res.json();
 
-    loadTeachers();
-}
+                const table = document.getElementById("teachersTable");
+                table.innerHTML = "";
 
-
-// ================= TEACHERS =================
-async function loadTeachers() {
-    try {
-        const res = await fetch("http://localhost:4003/admin/teachers");
-        const result = await res.json();
-        const teachers = result.data || result || [];
-
-        const table = document.getElementById("teachersTable");
-        table.innerHTML = "";
-
-        teachers.forEach(t => {
-            table.innerHTML += `
+                (teachers || []).forEach(t => {
+                    table.innerHTML += `
                 <tr>
                     <td>${t.name}</td>
                     <td>${t.email}</td>
-                    
-                    <td>${t.subject || "-"}</td>
+                    <td>${(t.subjectIds && t.subjectIds.map(s => s.name).join(', ')) || '-'}</td>
                 </tr>
-            `;//// <td>${t.phonenumber}</td>
-        });
+            `;
+                });
 
-    } catch (error) {
-        console.log("Teachers not loading");
-    }
-}
+            } catch (error) {
+                console.log("Teachers not loading", error);
+            }
+        }
 
 
-// ================= ACTIONS =================
-async function approveStudent(id) {
-    await fetch(`http://localhost:4003/users/approve/${id}`, { method: "PUT" });
-    loadData();
-}
+        // ================= ACTIONS =================
+        async function approveStudent(id) {
+            try {
+                const token = localStorage.getItem('token') || '';
+                await fetch(`http://localhost:5001/api/enquiry/${id}`, {
+                    method: "PUT",
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ admissionStatus: 'approved', approved: true })
+                });
+                loadData();
+            } catch (err) { console.error(err); }
+        }
 
-async function admitStudent(id) {
-    await fetch(`http://localhost:4003/users/admit/${id}`, { method: "PUT" });
-    loadData();
-}
+        async function admitStudent(id) {
+            try {
+                const token = localStorage.getItem('token') || '';
+                await fetch(`http://localhost:5001/api/enquiry/${id}`, {
+                    method: "PUT",
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ admissionStatus: 'admitted' })
+                });
+                loadData();
+            } catch (err) { console.error(err); }
+        }
 
-async function markOld(id) {
-    await fetch(`http://localhost:4003/users/mark-old/${id}`, { method: "PUT" });
-    loadData();
-}
+        async function markOld(id) {
+            try {
+                const token = localStorage.getItem('token') || '';
+                await fetch(`http://localhost:5001/api/enquiry/${id}`, {
+                    method: "PUT",
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ admissionStatus: 'old' })
+                });
+                loadData();
+            } catch (err) { console.error(err); }
+        }
 
-async function deleteStudent(id) {
-    if(confirm("Delete this student?")) {
-        await fetch(`http://localhost:4003/users/${id}`, { method: "DELETE" });
-        loadData();
-    }
-}
+        async function deleteStudent(id) {
+            if (confirm("Delete this student?")) {
+                try {
+                    const token = localStorage.getItem('token') || '';
+                    await fetch(`http://localhost:5001/api/enquiry/${id}`, { method: "DELETE", headers: { 'Authorization': 'Bearer ' + token } });
+                    loadData();
+                } catch (err) { console.error(err); }
+            }
+        }
 
-window.onload = loadData;
+        window.onload = loadData;
 
-</script>
+    </script>
 
 </body>
+
 </html>

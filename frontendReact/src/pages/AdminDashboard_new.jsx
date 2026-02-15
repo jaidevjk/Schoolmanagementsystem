@@ -30,26 +30,22 @@ const AdminDashboard = () => {
     };
 
     const loadData = async () => {
+        // Load enquiries from backend API and use them as the dashboard data source
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch("http://localhost:4003/users", {
+            const res = await fetch("http://localhost:5001/api/enquiry", {
                 headers: {
-                    "Authorization": `Bearer ${token}`
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
                 }
             });
             const result = await res.json();
-            let data = [];
-            if (Array.isArray(result)) {
-                data = result;
-            } else if (Array.isArray(result.data)) {
-                data = result.data;
-            } else if (result && typeof result === 'object') {
-                data = [result];
-            }
+            const data = Array.isArray(result) ? result : (Array.isArray(result.data) ? result.data : []);
+            // backend returns Enquiry objects; store in `users` state to reuse existing UI
             setUsers(Array.isArray(data) ? data : []);
             loadTeachers();
         } catch (error) {
-            console.error("Error loading users:", error);
+            console.error("Error loading enquiries:", error);
             setUsers([]);
         }
     };
@@ -199,41 +195,47 @@ const AdminDashboard = () => {
     // ========== STUDENT ACTIONS ==========
     const approveStudent = async (id) => {
         const token = localStorage.getItem("token");
-        await fetch(`http://localhost:4003/users/approve/${id}`, {
+        await fetch(`http://localhost:5001/api/enquiry/${id}`, {
             method: "PUT",
             headers: {
-                "Authorization": `Bearer ${token}`
-            }
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ admissionStatus: 'approved', approved: true })
         });
         loadData();
     };
 
     const admitStudent = async (id) => {
         const token = localStorage.getItem("token");
-        await fetch(`http://localhost:4003/users/admit/${id}`, {
+        await fetch(`http://localhost:5001/api/enquiry/${id}`, {
             method: "PUT",
             headers: {
-                "Authorization": `Bearer ${token}`
-            }
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ admissionStatus: 'admitted' })
         });
         loadData();
     };
 
     const markOld = async (id) => {
         const token = localStorage.getItem("token");
-        await fetch(`http://localhost:4003/users/mark-old/${id}`, {
+        await fetch(`http://localhost:5001/api/enquiry/${id}`, {
             method: "PUT",
             headers: {
-                "Authorization": `Bearer ${token}`
-            }
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ admissionStatus: 'old' })
         });
         loadData();
     };
 
     const deleteStudent = async (id) => {
-        if (window.confirm("Delete this student?")) {
+        if (window.confirm("Delete this enquiry?")) {
             const token = localStorage.getItem("token");
-            await fetch(`http://localhost:4003/users/${id}`, {
+            await fetch(`http://localhost:5001/api/enquiry/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Authorization": `Bearer ${token}`
@@ -244,10 +246,10 @@ const AdminDashboard = () => {
     };
 
     // Filtered Lists
-    const pendingStudents = Array.isArray(users) ? users.filter(u => u.AdmissionStatus === "Pending" && !u.isOldStudent) : [];
-    const approvedStudents = Array.isArray(users) ? users.filter(u => u.AdmissionStatus === "Yet to be Admitted" && !u.isOldStudent) : [];
-    const admittedStudents = Array.isArray(users) ? users.filter(u => u.AdmissionStatus === "Admitted" && !u.isOldStudent) : [];
-    const oldStudents = Array.isArray(users) ? users.filter(u => u.isOldStudent) : [];
+    // `users` now contains Enquiry objects from backend with fields: admissionStatus, isOldStudent
+    const pendingStudents = Array.isArray(users) ? users.filter(u => u.admissionStatus === 'pending' && !u.isOldStudent) : [];
+    const approvedStudents = Array.isArray(users) ? users.filter(u => u.admissionStatus === 'approved' && !u.isOldStudent) : [];
+    const admittedStudents = Array.isArray(users) ? users.filter(u => u.admissionStatus === 'admitted' && !u.isOldStudent) : [];
 
     return (
         <div className="flex flex-col min-h-screen">

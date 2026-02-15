@@ -4,6 +4,8 @@ import {
   getMyAttendance,
   markAttendance,
   bulkMarkAttendance,
+  updateAttendance,
+  deleteAttendance,
 } from '../controllers/attendanceController.js';
 import { protect, role } from '../middleware/auth.js';
 
@@ -14,5 +16,7 @@ router.use(protect);
 router.get('/', role('admin', 'teacher'), getAttendance);
 router.post('/', role('admin', 'teacher'), markAttendance);
 router.post('/bulk', role('admin', 'teacher'), bulkMarkAttendance);
+router.put('/:id', role('admin', 'teacher'), updateAttendance);
+router.delete('/:id', role('admin', 'teacher'), deleteAttendance);
 
 export default router;

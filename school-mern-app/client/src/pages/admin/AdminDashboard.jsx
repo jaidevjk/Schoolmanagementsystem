@@ -61,9 +61,9 @@ export default function AdminDashboard() {
 
   const approveEnquiry = async (id) => {
     try {
-      await api.put(`/enquiry/${id}`, { status: 'approved' });
+      await api.put(`/enquiry/${id}`, { admissionStatus: 'approved', approved: true });
       loadData();
-      alert('Enquiry approved! Status changed to "Yet to be Admitted"');
+      alert('Enquiry approved. Status: approved (Yet to be Admitted)');
     } catch (error) {
       console.error('Error approving enquiry:', error);
       alert('Error approving enquiry');
@@ -72,7 +72,7 @@ export default function AdminDashboard() {
 
   const admitStudent = async (id) => {
     try {
-      await api.put(`/enquiry/${id}`, { status: 'admitted', admittedOn: new Date() });
+      await api.put(`/enquiry/${id}`, { admissionStatus: 'admitted' });
       loadData();
       alert('Student admitted successfully!');
     } catch (error) {
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
 
   const markAsOld = async (id) => {
     try {
-      await api.put(`/enquiry/${id}`, { status: 'old' });
+      await api.put(`/enquiry/${id}`, { admissionStatus: 'old' });
       loadData();
       alert('Student marked as old student');
     } catch (error) {
@@ -92,11 +92,14 @@ export default function AdminDashboard() {
     }
   };
 
-  // Filter enquiries by status
-  const pendingEnquiries = enquiries.filter(e => e.status === 'pending');
-  const approvedEnquiries = enquiries.filter(e => e.status === 'approved');
-  const admittedStudents = enquiries.filter(e => e.status === 'admitted');
-  const oldStudents = enquiries.filter(e => e.status === 'old');
+  // Filter enquiries by server fields (admissionStatus, approved, isOldStudent)
+  const pendingEnquiries = enquiries.filter(e => e.admissionStatus === 'pending');
+  const approvedEnquiries = enquiries.filter(e => e.admissionStatus === 'approved');
+  // admitted within last 7 days
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const admittedStudents = enquiries.filter(e => e.admissionStatus === 'admitted' && e.admittedAt && new Date(e.admittedAt) >= sevenDaysAgo);
+  const oldStudents = enquiries.filter(e => e.isOldStudent === true || e.admissionStatus === 'old');
 
   const lineData = attendanceData ? {
     labels: attendanceData.labels,
@@ -261,7 +264,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* ================= OLD STUDENTS ================= */}
-      <div className="dash-card">
+      {/* <div className="dash-card">
         <h3>Old Students</h3>
         <div className="dash-table-wrap">
           <table>
@@ -289,7 +292,7 @@ export default function AdminDashboard() {
             </tbody>
           </table>
         </div>
-      </div>
+      </div> */}
     </>
   );
 }

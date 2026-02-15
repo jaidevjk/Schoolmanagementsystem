@@ -22,13 +22,13 @@ export default function PublicLayout() {
             ) : (
               <span className="logo-fallback">VB</span>
             )}
-            <h1 className="brand-title">V BLOOMS D WORLD SCHOOL</h1>
+            <h1 className="brand-title" style={{color:'white'}}>V BLOOMS D WORLD SCHOOL</h1>
           </NavLink>
           <nav className="site-nav">
             {navLinks.map(({ to, label }) => (
-              <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>{label}</NavLink>
+              <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} style={({ isActive }) => ({ color: isActive ? '#ffd700' : '#ffffff' })}>{label}</NavLink>
             ))}
-            <NavLink to="/login" className="nav-link login-link">Login</NavLink>
+            <NavLink to="/login" className="nav-link login-link" style={{ color: '#ffffff' }}>Login</NavLink>
           </nav>
         </div>
       </header>

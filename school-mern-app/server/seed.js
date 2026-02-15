@@ -10,7 +10,7 @@ import Attendance from './models/Attendance.js';
 import Marks from './models/Marks.js';
 import Enquiry from './models/Enquiry.js';
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://jaidev:4AL15ME715@cluster0.vkf2h.mongodb.net/school_Db?appName=Cluster0';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://monishakrishna465_db_user:23DSC035K@cluster0.3jrss8l.mongodb.net/school_Db?appName=Cluster0';
 
 const CREDENTIALS = [];
 

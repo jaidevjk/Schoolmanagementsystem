@@ -23,6 +23,7 @@ import StudentDashboard from './pages/student/StudentDashboard';
 import StudentAttendance from './pages/student/StudentAttendance';
 import StudentMarks from './pages/student/StudentMarks';
 import RoleDashboard from './components/RoleDashboard';
+import PasswordReset from './pages/PasswordReset';
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth();
@@ -56,6 +57,7 @@ function App() {
         <Route path="teacher/marks" element={<ProtectedRoute roles={['teacher']}><TeacherMarks /></ProtectedRoute>} />
         <Route path="student/attendance" element={<ProtectedRoute roles={['student']}><StudentAttendance /></ProtectedRoute>} />
         <Route path="student/marks" element={<ProtectedRoute roles={['student']}><StudentMarks /></ProtectedRoute>} />
+        <Route path="password-reset" element={<ProtectedRoute roles={['admin', 'teacher', 'student']}><PasswordReset /></ProtectedRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

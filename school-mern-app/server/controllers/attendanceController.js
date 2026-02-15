@@ -105,3 +105,38 @@ export const bulkMarkAttendance = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const updateAttendance = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, remarks } = req.body;
+    if (!status) {
+      return res.status(400).json({ message: 'Status is required.' });
+    }
+    const record = await Attendance.findByIdAndUpdate(
+      id,
+      { status, remarks, markedBy: req.user._id },
+      { new: true }
+    ).populate('studentId').populate('classId');
+    
+    if (!record) {
+      return res.status(404).json({ message: 'Attendance record not found.' });
+    }
+    res.json(record);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const deleteAttendance = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const record = await Attendance.findByIdAndDelete(id);
+    if (!record) {
+      return res.status(404).json({ message: 'Attendance record not found.' });
+    }
+    res.json({ message: 'Attendance deleted successfully.' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

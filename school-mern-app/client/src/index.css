@@ -755,20 +755,22 @@ tr:hover td {
 }
 
 .nav-link {
-  color: #fff;
+  color: #ffffff;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-block;
 }
 
 .nav-link:hover {
-  color: #fff;
+  color: #ffd700;
   text-decoration: underline;
 }
 
 .nav-link.active {
-  color: #fff;
+  color: #ffd700;
   text-decoration: underline;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .nav-link.login-link {
@@ -1122,10 +1124,13 @@ tr:hover td {
 }
 
 .site-footer a {
-  color: #fff;
+  color: #ffffff;
+  text-decoration: none;
+  transition: all 0.3s ease;
 }
 
 .site-footer a:hover {
+  color: #ffffff;
   text-decoration: underline;
 }
 
