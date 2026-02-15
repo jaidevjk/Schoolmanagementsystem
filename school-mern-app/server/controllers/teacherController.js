@@ -42,10 +42,26 @@ export const getMyProfile = async (req, res) => {
 export const createTeacher = async (req, res) => {
   try {
     const data = { ...req.body };
-    if (data.userId) {
+    // If no userId provided, create a User account for the teacher automatically
+    if (!data.userId) {
+      // require minimal fields for user creation
+      if (!data.name || !data.email) return res.status(400).json({ message: 'Name and email required to create teacher.' });
+      // generate a temporary password
+      const tempPassword = Math.random().toString(36).slice(-8) + 'A1!';
+      const existing = await User.findOne({ email: data.email });
+      if (existing) {
+        // if a user exists, ensure it's a teacher
+        if (existing.role !== 'teacher') return res.status(400).json({ message: 'Email already registered with different role.' });
+        data.userId = existing._id;
+      } else {
+        const newUser = await User.create({ name: data.name, email: data.email, password: tempPassword, role: 'teacher', phone: data.phoneNumber || '' });
+        data.userId = newUser._id;
+      }
+    } else {
       const user = await User.findById(data.userId);
       if (!user || user.role !== 'teacher') return res.status(400).json({ message: 'Invalid user or role.' });
     }
+
     const teacher = await Teacher.create(data);
     const populated = await Teacher.findById(teacher._id).populate('subjectIds').populate('classIds');
     res.status(201).json(populated);
@@ -68,9 +84,9 @@ export const updateTeacher = async (req, res) => {
 
 export const deleteTeacher = async (req, res) => {
   try {
-    const teacher = await Teacher.findByIdAndDelete(req.params.id);
+    const teacher = await Teacher.findByIdAndUpdate(req.params.id, { status: 'inactive' }, { new: true });
     if (!teacher) return res.status(404).json({ message: 'Teacher not found.' });
-    res.json({ message: 'Teacher deleted.' });
+    res.json({ message: 'Teacher deactivated.', teacher });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

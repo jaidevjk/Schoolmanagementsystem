@@ -62,9 +62,9 @@ export const updateStudent = async (req, res) => {
 
 export const deleteStudent = async (req, res) => {
   try {
-    const student = await Student.findByIdAndDelete(req.params.id);
+    const student = await Student.findByIdAndUpdate(req.params.id, { status: 'inactive' }, { new: true });
     if (!student) return res.status(404).json({ message: 'Student not found.' });
-    res.json({ message: 'Student deleted.' });
+    res.json({ message: 'Student deactivated.', student });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

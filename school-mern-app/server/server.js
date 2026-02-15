@@ -11,6 +11,7 @@ import subjectRoutes from './routes/subjects.js';
 import attendanceRoutes from './routes/attendance.js';
 import marksRoutes from './routes/marks.js';
 import enquiryRoutes from './routes/enquiry.js';
+import passwordResetRoutes from './routes/passwordReset.js';
 // const mongoose = require("mongoose");
 // import path from 'path';
 import mongoose from 'mongoose';
@@ -64,7 +65,7 @@ import mongoose from 'mongoose';
 //     process.exit(1);
 //   });
 //let mongoConnUrl = "mongodb+srv://monishakrishna465_db_user:23DSC035K@cluster0.3jrss8l.mongodb.net/";
-let mongoConnUrl = "mongodb+srv://jaidev:4AL15ME715@cluster0.vkf2h.mongodb.net/school_Db?appName=Cluster0"
+let mongoConnUrl = process.env.MONGO_URI || "mongodb+srv://monishakrishna465_db_user:23DSC035K@cluster0.3jrss8l.mongodb.net/school_mern?retryWrites=true&w=majority";
 mongoose.connect(mongoConnUrl, { useNewUrlParser: true });
 let db = mongoose.connection;
 db.on("error", function (error) { console.log("Error came in connecting" + error); });
@@ -84,6 +85,7 @@ app.use('/api/subjects', subjectRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/marks', marksRoutes);
 app.use('/api/enquiry', enquiryRoutes);
+app.use('/api/password-reset', passwordResetRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'School Management API' });
