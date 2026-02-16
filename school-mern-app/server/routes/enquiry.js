@@ -10,9 +10,9 @@ const router = express.Router();
 // POST - Create enquiry
 router.post('/', async (req, res) => {
   try {
-    const { parentName, name, email, phonenumber, dob, gender, address, grade, description } = req.body;
-    if (!parentName || !name || !email || !phonenumber || !dob || !gender || !address || !grade) {
-      return res.status(400).json({ message: 'All fields are required.' });
+    const { fatherName, motherName, name, email, phonenumber, dob, gender, address, grade, description } = req.body;
+    if (!fatherName || !motherName || !name || !email || !phonenumber || !dob || !gender || !address || !grade) {
+      return res.status(400).json({ message: 'All fields (including Father Name and Mother Name) are required.' });
     }
 
     const dobDate = dob ? (typeof dob === 'string' ? new Date(dob) : dob) : undefined;
@@ -21,7 +21,8 @@ router.post('/', async (req, res) => {
     }
 
     const enquiry = await Enquiry.create({
-      parentName: String(parentName).trim(),
+      fatherName: String(fatherName).trim(),
+      motherName: String(motherName).trim(),
       name: String(name).trim(),
       email: String(email).trim().toLowerCase(),
       phonenumber: Number(phonenumber),
@@ -107,7 +108,8 @@ router.put('/:id', protect, async (req, res) => {
             name: enquiry.name,
             email: enquiry.email,
             rollNumber: `STU-${Date.now()}`, // Auto-generate roll number
-            fatherName: enquiry.parentName,
+            fatherName: enquiry.fatherName,
+            motherName: enquiry.motherName,
             dateOfBirth: enquiry.dob,
             gender: enquiry.gender,
             address: enquiry.address,

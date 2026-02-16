@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin — Students</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand"><span class="logo">SM</span><span>Admin</span></div>
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="nav-item">Dashboard</a>
+                <a href="admin-students.html" class="nav-item active">Students</a>
+                <a href="admin-teachers.html" class="nav-item">Teachers</a>
+                <a href="admin-classes.html" class="nav-item">Classes</a>
+                <a href="admin-subjects.html" class="nav-item">Subjects</a>
+                <a href="admin-attendance.html" class="nav-item">Attendance</a>
+                <a href="admin-marks.html" class="nav-item">Marks</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info"><strong>Admin User</strong><span class="badge">Administrator</span></div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="dash-header">
+                <h2>Students</h2>
+            </div>
+            <section class="dash-card">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <h3>Manage Students</h3>
+                    <button class="btn btn-primary">+ Add Student</button>
+                </div>
+                <div class="dash-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Roll</th>
+                                <th>Class</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-tbody">
+                            <!-- populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="../js/main.js"></script>
+    <script>
+        // admin - students dynamic behavior
+        async function loadStudents() {
+            try {
+                const data = await window.api.get('/students');
+                const list = Array.isArray(data) ? data.filter(s => s.status !== 'inactive') : [];
+                const tbody = document.getElementById('students-tbody');
+                tbody.innerHTML = list.map(s => `
+                    <tr>
+                      <td>${s.name || ''}</td>
+                      <td>${s.email || ''}</td>
+                      <td>${s.rollNumber || ''}</td>
+                      <td>${s.classId?.name || '-'}</td>
+                      <td>
+                        <button class="btn" onclick="openEditStudent('${s._id}')">Edit</button>
+                        <button class="btn" style="background:#e74c3c;color:#fff" onclick="deactivateStudent('${s._id}')">Deactivate</button>
+                      </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                alert('Failed to load students. Check console for details.');
+            }
+        }
+
+        function openEditStudent(id) {
+            // fetch student and show modal form
+            window.api.get(`/students/${id}`).then(s => {
+                const modal = window.showModal(`
+                  <h3>Edit Student</h3>
+                  <form id="student-form">
+                    <div><label>Full name</label><input name="name" value="${s.name || ''}" required></div>
+                    <div><label>Email</label><input name="email" type="email" value="${s.email || ''}" required></div>
+                    <div><label>Roll Number</label><input name="rollNumber" value="${s.rollNumber || ''}" required></div>
+                    <div style="margin-top:12px"><button type="button" id="save-student" class="btn btn-primary">Save</button> <button type="button" id="cancel" class="btn">Cancel</button></div>
+                  </form>
+                `);
+                modal.box.querySelector('#cancel').addEventListener('click', () => modal.close());
+                modal.box.querySelector('#save-student').addEventListener('click', async () => {
+                    const form = modal.box.querySelector('#student-form');
+                    const body = { name: form.name.value, email: form.email.value, rollNumber: form.rollNumber.value };
+                    try { await window.api.put(`/students/${id}`, body); alert('Student updated'); modal.close(); loadStudents(); } catch (e) { alert('Update failed'); }
+                });
+            }).catch(() => alert('Failed to load student'));
+        }
+
+        async function deactivateStudent(id) {
+            if (!confirm('Deactivate this student?')) return;
+            try {
+                await window.api.patch(`/students/${id}`, { status: 'inactive' });
+                alert('Student deactivated');
+                loadStudents();
+            } catch (e) { alert('Failed to deactivate'); }
+        }
+
+        // wire Add Student button
+        document.querySelector('.btn.btn-primary').addEventListener('click', () => {
+            const modal = window.showModal(`
+              <h3>Add Student</h3>
+              <form id="student-form">
+                <div><label>Full name</label><input name="name" required></div>
+                <div><label>Email</label><input name="email" type="email" required></div>
+                <div><label>Roll Number</label><input name="rollNumber" required></div>
+                <div style="margin-top:12px"><button type="button" id="save-student" class="btn btn-primary">Save</button> <button type="button" id="cancel" class="btn">Cancel</button></div>
+              </form>
+            `);
+            modal.box.querySelector('#cancel').addEventListener('click', () => modal.close());
+            modal.box.querySelector('#save-student').addEventListener('click', async () => {
+                const form = modal.box.querySelector('#student-form');
+                const body = { name: form.name.value, email: form.email.value, rollNumber: form.rollNumber.value };
+                try { await window.api.post('/students', body); alert('Student added'); modal.close(); loadStudents(); } catch (e) { alert('Failed to add student'); }
+            });
+        });
+
+        // initial load
+        loadStudents();
+    </script>
+</body>
+
+</html>

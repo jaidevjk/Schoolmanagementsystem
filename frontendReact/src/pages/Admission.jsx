@@ -4,7 +4,8 @@ import Footer from '../components/Footer';
 
 const Admission = () => {
     const [formData, setFormData] = useState({
-        parentName: '',
+        fatherName: '',
+        motherName: '',
         name: '',
         email: '',
         phonenumber: '',
@@ -23,7 +24,7 @@ const Admission = () => {
         event.preventDefault();
 
         try {
-            const res = await fetch("http://localhost:4003/users", {
+            const res = await fetch("http://localhost:4003/enquiry", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -36,7 +37,8 @@ const Admission = () => {
             if (res.ok) {
                 alert("Enquiry Submitted Successfully!");
                 setFormData({
-                    parentName: '',
+                    fatherName: '',
+                    motherName: '',
                     name: '',
                     email: '',
                     phonenumber: '',
@@ -183,10 +185,16 @@ const Admission = () => {
 
                         <h4 className="text-lg md:text-xl font-bold mb-4">Admission Enquiry</h4>
 
-                        <input id="parentName" required
+                        <input id="fatherName" required
                             className="border w-full p-2 mb-3 rounded text-sm md:text-base"
-                            placeholder="Parent Name"
-                            value={formData.parentName} onChange={handleChange}
+                            placeholder="Father's Name"
+                            value={formData.fatherName} onChange={handleChange}
+                        />
+
+                        <input id="motherName" required
+                            className="border w-full p-2 mb-3 rounded text-sm md:text-base"
+                            placeholder="Mother's Name"
+                            value={formData.motherName} onChange={handleChange}
                         />
 
                         <input id="name" required

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin — Attendance</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand"><span class="logo">SM</span><span>Admin</span></div>
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="nav-item">Dashboard</a>
+                <a href="admin-students.html" class="nav-item">Students</a>
+                <a href="admin-teachers.html" class="nav-item">Teachers</a>
+                <a href="admin-classes.html" class="nav-item">Classes</a>
+                <a href="admin-subjects.html" class="nav-item">Subjects</a>
+                <a href="admin-attendance.html" class="nav-item active">Attendance</a>
+                <a href="admin-marks.html" class="nav-item">Marks</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info"><strong>Admin User</strong><span class="badge">Administrator</span></div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="dash-header">
+                <h2>Attendance</h2>
+            </div>
+            <section class="dash-card">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <h3>Attendance Records</h3>
+                    <button class="btn btn-primary">+ Add Attendance</button>
+                </div>
+                <div class="dash-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Student</th>
+                                <th>Class</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-tbody">
+                            <!-- populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="../js/main.js"></script>
+    <script>
+        async function loadAttendance() {
+            try {
+                const data = await window.api.get('/attendance');
+                const list = Array.isArray(data) ? data : [];
+                const tbody = document.getElementById('attendance-tbody');
+                tbody.innerHTML = list.slice(0, 50).map(a => `
+                        <tr>
+                            <td>${new Date(a.date).toLocaleDateString()}</td>
+                            <td>${a.studentId?.name || ''}</td>
+                            <td>${a.classId?.name || ''}</td>
+                            <td><span class="badge">${a.status}</span></td>
+                            <td><button class="btn" onclick="openEditAttendance('${a._id}')">Edit</button> <button class="btn" style="background:#e74c3c;color:#fff" onclick="deleteAttendance('${a._id}')">Delete</button></td>
+                        </tr>
+                    `).join('');
+                if (list.length > 50) {
+                    // show note
+                    const note = document.createElement('p'); note.style.color = '#666'; note.style.fontSize = '12px'; note.textContent = 'Showing first 50 records'; tbody.parentElement.appendChild(note);
+                }
+            } catch (e) { console.error(e); alert('Failed to load attendance'); }
+        }
+
+        function openEditAttendance(id) {
+            window.api.get(`/attendance/${id}`).then(a => {
+                const modal = window.showModal(`
+                        <h3>Edit Attendance</h3>
+                        <form id="att-form">
+                            <div><label>Date</label><input name="date" type="date" value="${new Date(a.date).toISOString().split('T')[0]}" required></div>
+                            <div><label>Status</label><select name="status"><option value="present">Present</option><option value="absent">Absent</option><option value="leave">Leave</option></select></div>
+                            <div style="margin-top:12px"><button id="save" class="btn btn-primary">Save</button> <button id="cancel" class="btn">Cancel</button></div>
+                        </form>
+                    `);
+                modal.box.querySelector('#cancel').addEventListener('click', () => modal.close());
+                modal.box.querySelector('#save').addEventListener('click', async () => {
+                    const form = modal.box.querySelector('#att-form');
+                    try { await window.api.put(`/attendance/${id}`, { date: form.date.value, status: form.status.value }); alert('Updated'); modal.close(); loadAttendance(); } catch (e) { alert('Update failed'); }
+                });
+            }).catch(() => alert('Failed to load record'));
+        }
+
+        async function deleteAttendance(id) {
+            if (!confirm('Delete this attendance record?')) return;
+            try { await window.api.del(`/attendance/${id}`); alert('Deleted'); loadAttendance(); } catch (e) { alert('Delete failed'); }
+        }
+
+        document.querySelector('.btn.btn-primary').addEventListener('click', () => {
+            const modal = window.showModal(`
+                    <h3>Add Attendance</h3>
+                    <form id="att-form">
+                        <div><label>Date</label><input name="date" type="date" required></div>
+                        <div><label>Student ID</label><input name="studentId" required></div>
+                        <div><label>Class ID</label><input name="classId" required></div>
+                        <div><label>Status</label><select name="status"><option value="present">Present</option><option value="absent">Absent</option><option value="leave">Leave</option></select></div>
+                        <div style="margin-top:12px"><button id="save" class="btn btn-primary">Save</button> <button id="cancel" class="btn">Cancel</button></div>
+                    </form>
+                `);
+            modal.box.querySelector('#cancel').addEventListener('click', () => modal.close());
+            modal.box.querySelector('#save').addEventListener('click', async () => {
+                const f = modal.box.querySelector('#att-form');
+                const body = { date: f.date.value, studentId: f.studentId.value, classId: f.classId.value, status: f.status.value };
+                try { await window.api.post('/attendance', body); alert('Saved'); modal.close(); loadAttendance(); } catch (e) { alert('Failed to save'); }
+            });
+        });
+
+        loadAttendance();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin — Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand"><span class="logo">SM</span><span>Admin</span></div>
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="nav-item active">Dashboard</a>
+                <a href="admin-students.html" class="nav-item">Students</a>
+                <a href="admin-teachers.html" class="nav-item">Teachers</a>
+                <a href="admin-classes.html" class="nav-item">Classes</a>
+                <a href="admin-subjects.html" class="nav-item">Subjects</a>
+                <a href="admin-attendance.html" class="nav-item">Attendance</a>
+                <a href="admin-marks.html" class="nav-item">Marks</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info"><strong>Admin User</strong><span class="badge">Administrator</span></div>
+            </div>
+        </aside>
+        <main class="main-content">
+            <div class="dash-header">
+                <h2>Welcome, Admin!</h2>
+            </div>
+
+            <section class="dash-card">
+                <h3>Exam / Marks Management</h3>
+                <div class="dash-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th>Exam</th>
+                                <th>Marks</th>
+                                <th>Academic Year</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Alice Williams</td>
+                                <td>English</td>
+                                <td>midterm</td>
+                                <td>90 / 100</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>Bob Brown</td>
+                                <td>Mathematics</td>
+                                <td>midterm</td>
+                                <td>78 / 100</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>Emma Davis</td>
+                                <td>English</td>
+                                <td>midterm</td>
+                                <td>88 / 100</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="../js/main.js"></script>
+</body>
+
+</html>

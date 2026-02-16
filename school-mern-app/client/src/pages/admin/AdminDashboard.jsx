@@ -142,7 +142,8 @@ export default function AdminDashboard() {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Parent Name</th>
+                <th>Father Name</th>
+                <th>Mother Name</th>
                 <th>Email</th>
                 <th>Grade</th>
                 <th>Phone</th>
@@ -155,7 +156,8 @@ export default function AdminDashboard() {
                 pendingEnquiries.map(enquiry => (
                   <tr key={enquiry._id}>
                     <td>{enquiry.name || '-'}</td>
-                    <td>{enquiry.parentName || '-'}</td>
+                    <td>{enquiry.fatherName || '-'}</td>
+                    <td>{enquiry.motherName || '-'}</td>
                     <td>{enquiry.email || '-'}</td>
                     <td>{enquiry.grade || '-'}</td>
                     <td>{enquiry.phone || '-'}</td>
@@ -172,7 +174,7 @@ export default function AdminDashboard() {
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan="7" style={{ textAlign: 'center', padding: '15px' }}>No pending applications</td></tr>
+                <tr><td colSpan="8" style={{ textAlign: 'center', padding: '15px' }}>No pending applications</td></tr>
               )}
             </tbody>
           </table>
@@ -187,6 +189,8 @@ export default function AdminDashboard() {
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Father Name</th>
+                <th>Mother Name</th>
                 <th>Email</th>
                 <th>Grade</th>
                 <th>Status</th>
@@ -198,6 +202,8 @@ export default function AdminDashboard() {
                 approvedEnquiries.map(enquiry => (
                   <tr key={enquiry._id}>
                     <td>{enquiry.name || '-'}</td>
+                    <td>{enquiry.fatherName || '-'}</td>
+                    <td>{enquiry.motherName || '-'}</td>
                     <td>{enquiry.email || '-'}</td>
                     <td>{enquiry.grade || '-'}</td>
                     <td><span className="badge badge-success">Approved</span></td>
@@ -213,7 +219,7 @@ export default function AdminDashboard() {
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '15px' }}>No approved applications</td></tr>
+                <tr><td colSpan="7" style={{ textAlign: 'center', padding: '15px' }}>No approved applications</td></tr>
               )}
             </tbody>
           </table>
@@ -228,6 +234,8 @@ export default function AdminDashboard() {
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Father Name</th>
+                <th>Mother Name</th>
                 <th>Email</th>
                 <th>Grade</th>
                 <th>Admitted On</th>
@@ -240,6 +248,8 @@ export default function AdminDashboard() {
                 admittedStudents.map(enquiry => (
                   <tr key={enquiry._id}>
                     <td>{enquiry.name || '-'}</td>
+                    <td>{enquiry.fatherName || '-'}</td>
+                    <td>{enquiry.motherName || '-'}</td>
                     <td>{enquiry.email || '-'}</td>
                     <td>{enquiry.grade || '-'}</td>
                     <td>{enquiry.admittedOn ? new Date(enquiry.admittedOn).toLocaleDateString() : '-'}</td>
@@ -256,7 +266,7 @@ export default function AdminDashboard() {
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan="6" style={{ textAlign: 'center', padding: '15px' }}>No admitted students</td></tr>
+                <tr><td colSpan="8" style={{ textAlign: 'center', padding: '15px' }}>No admitted students</td></tr>
               )}
             </tbody>
           </table>

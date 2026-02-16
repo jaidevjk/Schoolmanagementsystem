@@ -65,7 +65,7 @@ import mongoose from 'mongoose';
 //     process.exit(1);
 //   });
 //let mongoConnUrl = "mongodb+srv://monishakrishna465_db_user:23DSC035K@cluster0.3jrss8l.mongodb.net/";
-let mongoConnUrl = process.env.MONGO_URI || "mongodb+srv://monishakrishna465_db_user:23DSC035K@cluster0.3jrss8l.mongodb.net/school_Db?appName=Cluster0";
+let mongoConnUrl = process.env.MONGO_URI || "mongodb+srv://jaidev:4AL15ME715@cluster0.vkf2h.mongodb.net/school_Db?appName=Cluster0";
 mongoose.connect(mongoConnUrl, { useNewUrlParser: true });
 let db = mongoose.connection;
 db.on("error", function (error) { console.log("Error came in connecting" + error); });

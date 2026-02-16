@@ -9,7 +9,11 @@ const enquirySchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  parentName: {
+  fatherName: {
+    type: String,
+    required: true
+  },
+  motherName: {
     type: String,
     required: true
   },

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin — Teachers</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand"><span class="logo">SM</span><span>Admin</span></div>
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="nav-item">Dashboard</a>
+                <a href="admin-students.html" class="nav-item">Students</a>
+                <a href="admin-teachers.html" class="nav-item active">Teachers</a>
+                <a href="admin-classes.html" class="nav-item">Classes</a>
+                <a href="admin-subjects.html" class="nav-item">Subjects</a>
+                <a href="admin-attendance.html" class="nav-item">Attendance</a>
+                <a href="admin-marks.html" class="nav-item">Marks</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info"><strong>Admin User</strong><span class="badge">Administrator</span></div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="dash-header">
+                <h2>Teachers</h2>
+            </div>
+            <section class="dash-card">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <h3>Manage Teachers</h3>
+                    <button class="btn btn-primary">+ Add Teacher</button>
+                </div>
+                <div class="dash-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Employee ID</th>
+                                <th>Qualification</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Vikram Singh</td>
+                                <td>vikram@example.com</td>
+                                <td>T-01</td>
+                                <td>MSc</td>
+                            </tr>
+                            <tr>
+                                <td>Priya Sharma</td>
+                                <td>priya@example.com</td>
+                                <td>T-02</td>
+                                <td>BEd</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="../js/main.js"></script>
+</body>
+
+</html>

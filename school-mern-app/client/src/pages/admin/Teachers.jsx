@@ -6,7 +6,16 @@ export default function Teachers() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState(null);
-  const [form, setForm] = useState({ name: '', email: '', employeeId: '', qualification: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    employeeId: '',
+    qualification: '',
+    phoneNumber: '',
+    dateOfBirth: '',
+    gender: 'Male',
+    address: ''
+  });
 
   useEffect(() => {
     refresh();
@@ -27,11 +36,24 @@ export default function Teachers() {
         name: teacher.name,
         email: teacher.email,
         employeeId: teacher.employeeId,
-        qualification: teacher.qualification || ''
+        qualification: teacher.qualification || '',
+        phoneNumber: teacher.phoneNumber || '',
+        dateOfBirth: teacher.dateOfBirth ? teacher.dateOfBirth.split('T')[0] : '',
+        gender: teacher.gender || 'Male',
+        address: teacher.address || ''
       });
     } else {
       setEditingTeacher(null);
-      setForm({ name: '', email: '', employeeId: '', qualification: '' });
+      setForm({
+        name: '',
+        email: '',
+        employeeId: '',
+        qualification: '',
+        phoneNumber: '',
+        dateOfBirth: '',
+        gender: 'Male',
+        address: ''
+      });
     }
     setShowModal(true);
   };
@@ -39,7 +61,16 @@ export default function Teachers() {
   const closeModal = () => {
     setShowModal(false);
     setEditingTeacher(null);
-    setForm({ name: '', email: '', employeeId: '', qualification: '' });
+    setForm({
+      name: '',
+      email: '',
+      employeeId: '',
+      qualification: '',
+      phoneNumber: '',
+      dateOfBirth: '',
+      gender: 'Male',
+      address: ''
+    });
   };
 
   const handleFormChange = (e) => {
@@ -151,14 +182,59 @@ export default function Teachers() {
                 />
               </div>
               <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Employee ID</label>
+                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Employee ID *</label>
                 <input
                   type="text"
                   name="employeeId"
                   value={form.employeeId}
                   onChange={handleFormChange}
+                  required
                   style={inputStyle}
                   placeholder="e.g. T001"
+                />
+              </div>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Phone Number</label>
+                <input
+                  type="tel"
+                  name="phoneNumber"
+                  value={form.phoneNumber}
+                  onChange={handleFormChange}
+                  style={inputStyle}
+                  placeholder="e.g. 9876543210"
+                />
+              </div>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Date of Birth</label>
+                <input
+                  type="date"
+                  name="dateOfBirth"
+                  value={form.dateOfBirth}
+                  onChange={handleFormChange}
+                  style={inputStyle}
+                />
+              </div>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Gender</label>
+                <select
+                  name="gender"
+                  value={form.gender}
+                  onChange={handleFormChange}
+                  style={inputStyle}
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Address</label>
+                <textarea
+                  name="address"
+                  value={form.address}
+                  onChange={handleFormChange}
+                  style={{ ...inputStyle, minHeight: '80px' }}
+                  placeholder="Teacher's address"
                 />
               </div>
               <div style={{ marginBottom: '16px' }}>
@@ -171,6 +247,9 @@ export default function Teachers() {
                   style={inputStyle}
                   placeholder="e.g. M.Sc Mathematics"
                 />
+              </div>
+              <div style={{ marginBottom: '12px', padding: '10px', background: '#f0f0f0', borderRadius: '4px', fontSize: '12px', color: '#666' }}>
+                <strong>Note:</strong> A temporary password will be automatically generated for the teacher account.
               </div>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                 <button type="button" onClick={closeModal} style={buttonSecondaryStyle}>Cancel</button>

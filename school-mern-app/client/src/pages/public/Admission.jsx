@@ -6,7 +6,8 @@ export default function Admission() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [form, setForm] = useState({
-    parentName: '',
+    fatherName: '',
+    motherName: '',
     name: '',
     email: '',
     phone: '',
@@ -26,7 +27,8 @@ export default function Admission() {
     setMessage({ type: '', text: '' });
     try {
       await api.post('/enquiry', {
-        parentName: form.parentName,
+        fatherName: form.fatherName,
+        motherName: form.motherName,
         name: form.name,
         email: form.email,
         phonenumber: form.phone,
@@ -36,7 +38,7 @@ export default function Admission() {
         grade: form.grade,
       });
       setMessage({ type: 'success', text: 'Enquiry Submitted Successfully! We will contact you soon.' });
-      setForm({ parentName: '', name: '', email: '', phone: '', dob: '', gender: '', address: '', grade: '' });
+      setForm({ fatherName: '', motherName: '', name: '', email: '', phone: '', dob: '', gender: '', address: '', grade: '' });
     } catch (err) {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Something went wrong. Please try again.' });
     } finally {
@@ -116,7 +118,8 @@ export default function Admission() {
         <div className="form-card">
           <h4>Admission Enquiry</h4>
           <form onSubmit={handleSubmit}>
-            <input name="parentName" value={form.parentName} onChange={handleChange} placeholder="Parent Name" required />
+            <input name="fatherName" value={form.fatherName} onChange={handleChange} placeholder="Father's Name" required />
+            <input name="motherName" value={form.motherName} onChange={handleChange} placeholder="Mother's Name" required />
             <input name="name" value={form.name} onChange={handleChange} placeholder="Student Name" required />
             <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email" required />
             <input name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="Phone Number" required />

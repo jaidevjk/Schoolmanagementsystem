@@ -151,19 +151,19 @@ async function seed() {
     // ---------- ENQUIRIES (Pending, Approved, Admitted) ----------
     // Pending Enquiries
     const enquiry1 = await Enquiry.create({
-      name: 'Raj Patel', parentName: 'Mr. Patel', email: 'raj.patel@example.com', phonenumber: 9123456789,
+      name: 'Raj Patel', fatherName: 'Mr. Rajesh Patel', motherName: 'Mrs. Priya Patel', email: 'raj.patel@example.com', phonenumber: 9123456789,
       dob: new Date('2010-03-10'), gender: 'Male', address: 'Whitefield, Bangalore', grade: 'Class 10',
       description: ['Interested in Science stream', 'Good in Mathematics'],
       admissionStatus: 'pending', approved: false, isOldStudent: false
     });
     const enquiry2 = await Enquiry.create({
-      name: 'Neha Verma', parentName: 'Mrs. Verma', email: 'neha.verma@example.com', phonenumber: 9223456789,
+      name: 'Neha Verma', fatherName: 'Mr. Vikram Verma', motherName: 'Mrs. Geeta Verma', email: 'neha.verma@example.com', phonenumber: 9223456789,
       dob: new Date('2010-07-22'), gender: 'Female', address: 'Sarjapur, Bangalore', grade: 'Class 10',
       description: ['Strong Academic Record', 'Sports enthusiast'],
       admissionStatus: 'pending', approved: false, isOldStudent: false
     });
     const enquiry3 = await Enquiry.create({
-      name: 'Arjun Kumar', parentName: 'Mr. Kumar', email: 'arjun.kumar@example.com', phonenumber: 9323456789,
+      name: 'Arjun Kumar', fatherName: 'Mr. Anil Kumar', motherName: 'Mrs. Suman Kumar', email: 'arjun.kumar@example.com', phonenumber: 9323456789,
       dob: new Date('2011-02-14'), gender: 'Male', address: 'Marathahalli, Bangalore', grade: 'Class 9',
       description: ['Excellent in coding', 'Wants to pursue IT'],
       admissionStatus: 'pending', approved: false, isOldStudent: false
@@ -171,13 +171,13 @@ async function seed() {
 
     // Approved Enquiries (Yet to be Admitted)
     const enquiry4 = await Enquiry.create({
-      name: 'Anjali Singh', parentName: 'Mr. Singh', email: 'anjali.singh@example.com', phonenumber: 9423456789,
+      name: 'Anjali Singh', fatherName: 'Mr. Arjun Singh', motherName: 'Mrs. Anjum Singh', email: 'anjali.singh@example.com', phonenumber: 9423456789,
       dob: new Date('2010-11-08'), gender: 'Female', address: 'Bannerghatta, Bangalore', grade: 'Class 10',
       description: ['Transferring from other school'],
       admissionStatus: 'approved', approved: true, isOldStudent: false
     });
     const enquiry5 = await Enquiry.create({
-      name: 'Rohan Menon', parentName: 'Mr. Menon', email: 'rohan.menon@example.com', phonenumber: 9523456789,
+      name: 'Rohan Menon', fatherName: 'Mr. Hari Menon', motherName: 'Mrs. Lalitha Menon', email: 'rohan.menon@example.com', phonenumber: 9523456789,
       dob: new Date('2010-09-20'), gender: 'Male', address: 'Electronic City, Bangalore', grade: 'Class 10',
       description: ['Sibling of current student'],
       admissionStatus: 'approved', approved: true, isOldStudent: false
