@@ -11,6 +11,7 @@ export default function TeacherAttendance() {
   const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0]);
   const [students, setStudents] = useState([]);
   const [attendanceData, setAttendanceData] = useState({}); // { studentId: { status, remarks } }
+  const [showAttendanceTable, setShowAttendanceTable] = useState(false); // New state to control visibility
 
   // History State
   const [historyFilter, setHistoryFilter] = useState({
@@ -25,25 +26,40 @@ export default function TeacherAttendance() {
     fetchClasses();
   }, []);
 
-  // 2. Fetch Students when Class changes
+  // 2. Fetch Students when Class changes - NO, now we wait for button click for 'take' mode
+  // However, for 'history' mode dropdown, we might still want students? 
+  // The user requirement specifically asked for "get students list... based on classes... by clicking a button".
+  // This likely applies to the 'Take Attendance' table.
+  // For the History filter "Student (Optional)", it's helpful to have the list populated when class is selected.
+  // I will keep a background fetch for students when class changes purely for the dropdowns, 
+  // BUT I will NOT show the attendance table in 'take' mode until the button is clicked.
+
   useEffect(() => {
     if (selectedClass) {
-      fetchStudents(selectedClass);
+      // Just fetching students for the dropdowns mostly, 
+      // but in 'take' mode we will re-fetch or use this list when button clicked.
+      // To be safe and strictly follow "get... by clicking", I will clear the 'students' list used for the TABLE
+      // and maybe have a separate 'allClassStudents' for the dropdown? 
+      // check: "Also add provion to get the students list ... by clicking a button"
+      // Simplest: 
+      // - Class selected -> Clear table, Hide table.
+      // - Click "Get Attendance" -> Fetch students, Fetch attendance, Show table.
+      setShowAttendanceTable(false);
+      setStudents([]); // Clear current table students
+      setAttendanceData({});
+      // We still need students for the History mode "Student" dropdown. 
+      // Let's implement a separate fetch for that or just fetch them when switching to History?
+      // For now, let's just leave the history dropdown empty until they click "Search" or "Get Attendance"?
+      // No, that's bad UX for history filter. 
+      // I will fetch students silently for the dropdowns if we are in history mode.
+      fetchStudentsForDropdown(selectedClass);
     } else {
       setStudents([]);
+      setDropdownStudents([]);
     }
   }, [selectedClass]);
 
-  // 3. Fetch Attendance Data or History when dependencies change
-  useEffect(() => {
-    if (selectedClass) {
-      if (viewMode === 'take') {
-        fetchAttendanceForDate();
-      } else {
-        fetchAttendanceHistory();
-      }
-    }
-  }, [selectedClass, viewMode, attendanceDate, students]); // added students dependency
+  const [dropdownStudents, setDropdownStudents] = useState([]);
 
   const fetchClasses = () => {
     api.get('/classes')
@@ -51,28 +67,35 @@ export default function TeacherAttendance() {
       .catch(err => console.error("Error fetching classes", err));
   };
 
-  const fetchStudents = async (classId) => {
-    setLoading(true);
+  const fetchStudentsForDropdown = async (classId) => {
     try {
       const res = await api.get(`/students?classId=${classId}`);
-      setStudents(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      console.error("Error fetching students", err);
-    } finally {
-      setLoading(false);
-    }
+      setDropdownStudents(Array.isArray(res.data) ? res.data : []);
+    } catch (err) { console.error(err); }
   };
 
-  const fetchAttendanceForDate = async () => {
-    if (!selectedClass || !attendanceDate || students.length === 0) return;
+  // Main function called by "Get Attendance" button
+  const handleGetAttendance = async () => {
+    if (!selectedClass || !attendanceDate) {
+      alert("Please select a class and date.");
+      return;
+    }
 
     setLoading(true);
+    setShowAttendanceTable(true); // Show the table container
     try {
+      // 1. Fetch Students
+      const studentRes = await api.get(`/students?classId=${selectedClass}&status=active`);
+      const studentsList = Array.isArray(studentRes.data) ? studentRes.data : [];
+      setStudents(studentsList);
+
+      // 2. Fetch Existing Attendance
       const attendanceRes = await api.get(`/attendance?classId=${selectedClass}&date=${attendanceDate}`);
       const existingAttendance = Array.isArray(attendanceRes.data) ? attendanceRes.data : [];
 
+      // 3. Merge
       const initialData = {};
-      students.forEach(student => {
+      studentsList.forEach(student => {
         const record = existingAttendance.find(a => a.studentId?._id === student._id);
         initialData[student._id] = {
           status: record ? record.status : 'present',
@@ -81,7 +104,8 @@ export default function TeacherAttendance() {
       });
       setAttendanceData(initialData);
     } catch (err) {
-      console.error("Error fetching attendance data", err);
+      console.error("Error fetching data", err);
+      alert("Error loading data");
     } finally {
       setLoading(false);
     }
@@ -123,8 +147,8 @@ export default function TeacherAttendance() {
         entries
       });
       alert("Attendance saved successfully!");
-      // Refresh to ensure sync
-      fetchAttendanceForDate();
+      // Optionally refresh data
+      handleGetAttendance();
     } catch (err) {
       console.error(err);
       alert("Failed to save attendance");
@@ -156,7 +180,7 @@ export default function TeacherAttendance() {
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               className={`btn ${viewMode === 'take' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setViewMode('take')}
+              onClick={() => { setViewMode('take'); setShowAttendanceTable(false); }}
               style={viewMode === 'take' ? buttonPrimaryStyle : buttonSecondaryStyle}
             >
               Take Attendance
@@ -180,65 +204,73 @@ export default function TeacherAttendance() {
         <>
           {viewMode === 'take' && (
             <div className="animate-fade-in">
-              <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'end', gap: '15px', flexWrap: 'wrap' }}>
                 <div>
-                  <label style={{ fontWeight: 'bold' }}>Date: </label>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Date</label>
                   <input
                     type="date"
                     value={attendanceDate}
                     onChange={(e) => setAttendanceDate(e.target.value)}
-                    style={{ ...inputStyle, marginLeft: '10px' }}
+                    style={inputStyle}
                   />
                 </div>
-                <button onClick={handleBulkSubmit} style={buttonPrimaryStyle} disabled={students.length === 0}>Save Attendance</button>
+                <button onClick={handleGetAttendance} style={buttonSecondaryStyle}>Get Attendance</button>
+
+                {showAttendanceTable && students.length > 0 && (
+                  <button onClick={handleBulkSubmit} style={{ ...buttonPrimaryStyle, marginLeft: 'auto' }}>
+                    Save Changes
+                  </button>
+                )}
               </div>
 
-              <div className="dash-table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Roll No</th>
-                      <th>Student Name</th>
-                      <th>Status</th>
-                      <th>Remarks</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {students.map(s => (
-                      <tr key={s._id}>
-                        <td>{s.rollNumber || '-'}</td>
-                        <td>{s.name}</td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '10px' }}>
-                            {['present', 'absent', 'late', 'leave'].map(status => (
-                              <label key={status} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                                <input
-                                  type="radio"
-                                  name={`status-${s._id}`}
-                                  checked={attendanceData[s._id]?.status === status}
-                                  onChange={() => handleAttendanceChange(s._id, 'status', status)}
-                                  style={{ marginRight: '5px' }}
-                                />
-                                <span style={{ textTransform: 'capitalize' }}>{status}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </td>
-                        <td>
-                          <input
-                            type="text"
-                            placeholder="Optional remark"
-                            value={attendanceData[s._id]?.remarks || ''}
-                            onChange={(e) => handleAttendanceChange(s._id, 'remarks', e.target.value)}
-                            style={{ ...inputStyle, padding: '4px 8px' }}
-                          />
-                        </td>
+              {showAttendanceTable && (
+                <div className="dash-table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Roll No</th>
+                        <th>Student Name</th>
+                        <th>Status</th>
+                        <th>Remarks</th>
                       </tr>
-                    ))}
-                    {students.length === 0 && !loading && <tr><td colSpan="4" style={{ textAlign: 'center' }}>No students found in this class.</td></tr>}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {students.map(s => (
+                        <tr key={s._id}>
+                          <td>{s.rollNumber || '-'}</td>
+                          <td>{s.name}</td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                              {['present', 'absent', 'late', 'leave'].map(status => (
+                                <label key={status} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                  <input
+                                    type="radio"
+                                    name={`status-${s._id}`}
+                                    checked={attendanceData[s._id]?.status === status}
+                                    onChange={() => handleAttendanceChange(s._id, 'status', status)}
+                                    style={{ marginRight: '5px' }}
+                                  />
+                                  <span style={{ textTransform: 'capitalize' }}>{status}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              placeholder="Optional remark"
+                              value={attendanceData[s._id]?.remarks || ''}
+                              onChange={(e) => handleAttendanceChange(s._id, 'remarks', e.target.value)}
+                              style={{ ...inputStyle, padding: '4px 8px' }}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                      {students.length === 0 && !loading && <tr><td colSpan="4" style={{ textAlign: 'center' }}>No students found in this class.</td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
@@ -272,7 +304,7 @@ export default function TeacherAttendance() {
                     style={inputStyle}
                   >
                     <option value="">-- All Students --</option>
-                    {students.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                    {dropdownStudents.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
                   </select>
                 </div>
                 <button onClick={fetchAttendanceHistory} style={buttonPrimaryStyle}>Search</button>
