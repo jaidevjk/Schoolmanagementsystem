@@ -5,7 +5,7 @@ export default function TeacherMarks() {
   const [loading, setLoading] = useState(false);
 
   // View Mode: 'enter', 'history', 'results'
-  const [viewMode, setViewMode] = useState('enter');
+  const [viewMode, setViewMode] = useState('results');
 
   // Dropdown Data
   const [classes, setClasses] = useState([]);
