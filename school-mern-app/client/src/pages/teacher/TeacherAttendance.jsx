@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../../api/axios';
 
 export default function TeacherAttendance() {
@@ -11,7 +11,7 @@ export default function TeacherAttendance() {
   const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0]);
   const [students, setStudents] = useState([]);
   const [attendanceData, setAttendanceData] = useState({}); // { studentId: { status, remarks } }
-  const [showAttendanceTable, setShowAttendanceTable] = useState(false); // New state to control visibility
+  const [showAttendanceTable, setShowAttendanceTable] = useState(false);
 
   // History State
   const [historyFilter, setHistoryFilter] = useState({
@@ -20,46 +20,38 @@ export default function TeacherAttendance() {
     studentId: ''
   });
   const [attendanceHistory, setAttendanceHistory] = useState([]);
+  const [dropdownStudents, setDropdownStudents] = useState([]);
 
-  // 1. Fetch Classes on Mount
+  // Stats Logic (Derived State)
+  const stats = useMemo(() => {
+    const total = students.length;
+    let present = 0, absent = 0, leave = 0, late = 0;
+
+    Object.values(attendanceData).forEach(st => {
+      if (st.status === 'present') present++;
+      if (st.status === 'absent') absent++;
+      if (st.status === 'late') late++;
+      if (st.status === 'leave') leave++;
+    });
+
+    return { total, present, absent, leave, late };
+  }, [attendanceData, students]);
+
   useEffect(() => {
     fetchClasses();
   }, []);
 
-  // 2. Fetch Students when Class changes - NO, now we wait for button click for 'take' mode
-  // However, for 'history' mode dropdown, we might still want students? 
-  // The user requirement specifically asked for "get students list... based on classes... by clicking a button".
-  // This likely applies to the 'Take Attendance' table.
-  // For the History filter "Student (Optional)", it's helpful to have the list populated when class is selected.
-  // I will keep a background fetch for students when class changes purely for the dropdowns, 
-  // BUT I will NOT show the attendance table in 'take' mode until the button is clicked.
-
   useEffect(() => {
     if (selectedClass) {
-      // Just fetching students for the dropdowns mostly, 
-      // but in 'take' mode we will re-fetch or use this list when button clicked.
-      // To be safe and strictly follow "get... by clicking", I will clear the 'students' list used for the TABLE
-      // and maybe have a separate 'allClassStudents' for the dropdown? 
-      // check: "Also add provion to get the students list ... by clicking a button"
-      // Simplest: 
-      // - Class selected -> Clear table, Hide table.
-      // - Click "Get Attendance" -> Fetch students, Fetch attendance, Show table.
       setShowAttendanceTable(false);
-      setStudents([]); // Clear current table students
+      setStudents([]);
       setAttendanceData({});
-      // We still need students for the History mode "Student" dropdown. 
-      // Let's implement a separate fetch for that or just fetch them when switching to History?
-      // For now, let's just leave the history dropdown empty until they click "Search" or "Get Attendance"?
-      // No, that's bad UX for history filter. 
-      // I will fetch students silently for the dropdowns if we are in history mode.
       fetchStudentsForDropdown(selectedClass);
     } else {
       setStudents([]);
       setDropdownStudents([]);
     }
   }, [selectedClass]);
-
-  const [dropdownStudents, setDropdownStudents] = useState([]);
 
   const fetchClasses = () => {
     api.get('/classes')
@@ -74,7 +66,6 @@ export default function TeacherAttendance() {
     } catch (err) { console.error(err); }
   };
 
-  // Main function called by "Get Attendance" button
   const handleGetAttendance = async () => {
     if (!selectedClass || !attendanceDate) {
       alert("Please select a class and date.");
@@ -82,7 +73,7 @@ export default function TeacherAttendance() {
     }
 
     setLoading(true);
-    setShowAttendanceTable(true); // Show the table container
+    setShowAttendanceTable(true);
     try {
       // 1. Fetch Students
       const studentRes = await api.get(`/students?classId=${selectedClass}&status=active`);
@@ -98,7 +89,7 @@ export default function TeacherAttendance() {
       studentsList.forEach(student => {
         const record = existingAttendance.find(a => a.studentId?._id === student._id);
         initialData[student._id] = {
-          status: record ? record.status : 'present',
+          status: record ? record.status : 'present', // Default to present if new? Or null? Let's default to present for ease.
           remarks: record ? record.remarks : ''
         };
       });
@@ -131,6 +122,16 @@ export default function TeacherAttendance() {
     }));
   };
 
+  const markAll = (status) => {
+    setAttendanceData(prev => {
+      const newData = { ...prev };
+      Object.keys(newData).forEach(id => {
+        newData[id] = { ...newData[id], status };
+      });
+      return newData;
+    });
+  };
+
   const handleBulkSubmit = async () => {
     if (!window.confirm("Save attendance for this class?")) return;
     setLoading(true);
@@ -147,7 +148,6 @@ export default function TeacherAttendance() {
         entries
       });
       alert("Attendance saved successfully!");
-      // Optionally refresh data
       handleGetAttendance();
     } catch (err) {
       console.error(err);
@@ -159,12 +159,28 @@ export default function TeacherAttendance() {
 
   return (
     <div className="dash-card">
-      <h3>Teacher Attendance</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h3 style={{ margin: 0 }}>Teacher Attendance</h3>
+        <div style={{ display: 'flex', gap: '5px', background: '#f0f2f5', padding: '4px', borderRadius: '8px' }}>
+          <button
+            onClick={() => { setViewMode('take'); setShowAttendanceTable(false); }}
+            style={viewMode === 'take' ? tabActiveStyle : tabInactiveStyle}
+          >
+            Take Attendance
+          </button>
+          <button
+            onClick={() => setViewMode('history')}
+            style={viewMode === 'history' ? tabActiveStyle : tabInactiveStyle}
+          >
+            View History
+          </button>
+        </div>
+      </div>
 
       {/* Top Controls */}
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'end' }}>
-        <div style={{ minWidth: '200px' }}>
-          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Select Class</label>
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'end', background: '#f8f9fa', padding: '15px', borderRadius: '8px' }}>
+        <div style={{ minWidth: '250px' }}>
+          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', color: '#555' }}>Select Class</label>
           <select
             value={selectedClass}
             onChange={(e) => setSelectedClass(e.target.value)}
@@ -174,39 +190,21 @@ export default function TeacherAttendance() {
             {classes.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
           </select>
         </div>
-
-        <div>
-          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Mode</label>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              className={`btn ${viewMode === 'take' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => { setViewMode('take'); setShowAttendanceTable(false); }}
-              style={viewMode === 'take' ? buttonPrimaryStyle : buttonSecondaryStyle}
-            >
-              Take Attendance
-            </button>
-            <button
-              className={`btn ${viewMode === 'history' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setViewMode('history')}
-              style={viewMode === 'history' ? buttonPrimaryStyle : buttonSecondaryStyle}
-            >
-              View History
-            </button>
-          </div>
-        </div>
       </div>
 
       {loading && <div className="loading" style={{ margin: '10px 0' }}>Loading...</div>}
 
       {!selectedClass ? (
-        <p>Please select a class to proceed.</p>
+        <div style={{ textAlign: 'center', padding: '40px', color: '#888', fontStyle: 'italic' }}>
+          Please select a class from the dropdown above to manage attendance.
+        </div>
       ) : (
         <>
           {viewMode === 'take' && (
             <div className="animate-fade-in">
-              <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'end', gap: '15px', flexWrap: 'wrap' }}>
+              <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'end', gap: '15px', flexWrap: 'wrap', background: '#fff', padding: '15px', border: '1px solid #eee', borderRadius: '8px' }}>
                 <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Date</label>
+                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px', color: '#555' }}>Date</label>
                   <input
                     type="date"
                     value={attendanceDate}
@@ -214,72 +212,95 @@ export default function TeacherAttendance() {
                     style={inputStyle}
                   />
                 </div>
-                <button onClick={handleGetAttendance} style={buttonSecondaryStyle}>Get Attendance</button>
-
-                {showAttendanceTable && students.length > 0 && (
-                  <button onClick={handleBulkSubmit} style={{ ...buttonPrimaryStyle, marginLeft: 'auto' }}>
-                    Save Changes
-                  </button>
-                )}
+                <button onClick={handleGetAttendance} style={buttonSecondaryStyle}>Get Student List</button>
               </div>
 
-              {showAttendanceTable && (
-                <div className="dash-table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Roll No</th>
-                        <th>Student Name</th>
-                        <th>Status</th>
-                        <th>Remarks</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {students.map(s => (
-                        <tr key={s._id}>
-                          <td>{s.rollNumber || '-'}</td>
-                          <td>{s.name}</td>
-                          <td>
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                              {['present', 'absent', 'late', 'leave'].map(status => (
-                                <label key={status} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                                  <input
-                                    type="radio"
-                                    name={`status-${s._id}`}
-                                    checked={attendanceData[s._id]?.status === status}
-                                    onChange={() => handleAttendanceChange(s._id, 'status', status)}
-                                    style={{ marginRight: '5px' }}
-                                  />
-                                  <span style={{ textTransform: 'capitalize' }}>{status}</span>
-                                </label>
-                              ))}
-                            </div>
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              placeholder="Optional remark"
-                              value={attendanceData[s._id]?.remarks || ''}
-                              onChange={(e) => handleAttendanceChange(s._id, 'remarks', e.target.value)}
-                              style={{ ...inputStyle, padding: '4px 8px' }}
-                            />
-                          </td>
+              {showAttendanceTable && students.length > 0 && (
+                <>
+                  {/* Stats Dashboard */}
+                  <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                    <StatCard label="Total Students" value={stats.total} color="#34495e" />
+                    <StatCard label="Present" value={stats.present} color="#27ae60" />
+                    <StatCard label="Absent" value={stats.absent} color="#e74c3c" />
+                    <StatCard label="Late" value={stats.late} color="#f39c12" />
+                    <StatCard label="Leave" value={stats.leave} color="#3498db" />
+                  </div>
+
+                  {/* Bulk Actions */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                    <div>
+                      <button onClick={() => markAll('present')} style={{ ...buttonOutlineStyle, color: '#27ae60', borderColor: '#27ae60', marginRight: '10px' }}>Mark All Present</button>
+                      <button onClick={() => markAll('absent')} style={{ ...buttonOutlineStyle, color: '#e74c3c', borderColor: '#e74c3c' }}>Mark All Absent</button>
+                    </div>
+                    <button onClick={handleBulkSubmit} style={buttonPrimaryStyle}>Save Attendance</button>
+                  </div>
+
+                  <div className="dash-table-wrap" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.05)', borderRadius: '8px', overflow: 'hidden' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead style={{ background: '#f8f9fa' }}>
+                        <tr>
+                          <th style={{ padding: '12px 15px', textAlign: 'left', borderBottom: '2px solid #eee' }}>Roll No</th>
+                          <th style={{ padding: '12px 15px', textAlign: 'left', borderBottom: '2px solid #eee' }}>Student Name</th>
+                          <th style={{ padding: '12px 15px', textAlign: 'left', borderBottom: '2px solid #eee', width: '350px' }}>Status</th>
+                          <th style={{ padding: '12px 15px', textAlign: 'left', borderBottom: '2px solid #eee' }}>Remarks</th>
                         </tr>
-                      ))}
-                      {students.length === 0 && !loading && <tr><td colSpan="4" style={{ textAlign: 'center' }}>No students found in this class.</td></tr>}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {students.map(s => {
+                          const currentStatus = attendanceData[s._id]?.status;
+                          return (
+                            <tr key={s._id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                              <td style={{ padding: '12px 15px' }}>{s.rollNumber || '-'}</td>
+                              <td style={{ padding: '12px 15px', fontWeight: '500' }}>{s.name}</td>
+                              <td style={{ padding: '12px 15px' }}>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  {statusOptions.map(opt => (
+                                    <button
+                                      key={opt.value}
+                                      onClick={() => handleAttendanceChange(s._id, 'status', opt.value)}
+                                      style={{
+                                        ...statusPillStyle,
+                                        background: currentStatus === opt.value ? opt.color : '#fff',
+                                        color: currentStatus === opt.value ? '#fff' : '#666',
+                                        borderColor: currentStatus === opt.value ? opt.color : '#ddd',
+                                      }}
+                                    >
+                                      {opt.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </td>
+                              <td style={{ padding: '12px 15px' }}>
+                                <input
+                                  type="text"
+                                  placeholder="Note..."
+                                  value={attendanceData[s._id]?.remarks || ''}
+                                  onChange={(e) => handleAttendanceChange(s._id, 'remarks', e.target.value)}
+                                  style={{ ...inputStyle, padding: '6px 10px', width: '100%' }}
+                                />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button onClick={handleBulkSubmit} style={{ ...buttonPrimaryStyle, padding: '12px 24px', fontSize: '16px' }}>Save Final Attendance</button>
+                  </div>
+                </>
+              )}
+              {showAttendanceTable && students.length === 0 && !loading && (
+                <div style={{ padding: '20px', textAlign: 'center', background: '#f9f9f9', borderRadius: '8px' }}>No students found in this class.</div>
               )}
             </div>
           )}
 
           {viewMode === 'history' && (
             <div className="animate-fade-in">
-              {/* History Filters */}
-              <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'end' }}>
+              <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'end', background: '#fff', padding: '15px', border: '1px solid #eee', borderRadius: '8px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Start Date</label>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#666' }}>Start Date</label>
                   <input
                     type="date"
                     value={historyFilter.startDate}
@@ -288,7 +309,7 @@ export default function TeacherAttendance() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>End Date</label>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#666' }}>End Date</label>
                   <input
                     type="date"
                     value={historyFilter.endDate}
@@ -297,7 +318,7 @@ export default function TeacherAttendance() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Student (Optional)</label>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#666' }}>Filter by Student</label>
                   <select
                     value={historyFilter.studentId}
                     onChange={(e) => setHistoryFilter({ ...historyFilter, studentId: e.target.value })}
@@ -307,33 +328,43 @@ export default function TeacherAttendance() {
                     {dropdownStudents.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
                   </select>
                 </div>
-                <button onClick={fetchAttendanceHistory} style={buttonPrimaryStyle}>Search</button>
+                <button onClick={fetchAttendanceHistory} style={buttonPrimaryStyle}>Search Records</button>
               </div>
 
               <div className="dash-table-wrap">
-                <table>
-                  <thead>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead style={{ background: '#f5f5f5' }}>
                     <tr>
-                      <th>Date</th>
-                      <th>Student</th>
-                      <th>Status</th>
-                      <th>Remarks</th>
+                      <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Date</th>
+                      <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Student</th>
+                      <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Status</th>
+                      <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Remarks</th>
                     </tr>
                   </thead>
                   <tbody>
                     {attendanceHistory.map(record => (
-                      <tr key={record._id}>
-                        <td>{new Date(record.date).toLocaleDateString()}</td>
-                        <td>{record.studentId?.name || 'Unknown'}</td>
-                        <td>
-                          <span className={`badge badge-${record.status === 'present' ? 'success' : record.status === 'absent' ? 'danger' : 'warning'}`}>
+                      <tr key={record._id} style={{ borderBottom: '1px solid #eee' }}>
+                        <td style={{ padding: '12px' }}>{new Date(record.date).toLocaleDateString()}</td>
+                        <td style={{ padding: '12px', fontWeight: '500' }}>{record.studentId?.name || 'Unknown'}</td>
+                        <td style={{ padding: '12px' }}>
+                          <span
+                            style={{
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              fontWeight: 'bold',
+                              textTransform: 'uppercase',
+                              background: record.status === 'present' ? '#e8f8f5' : record.status === 'absent' ? '#fdedec' : '#fef9e7',
+                              color: record.status === 'present' ? '#27ae60' : record.status === 'absent' ? '#c0392b' : '#f39c12',
+                            }}
+                          >
                             {record.status}
                           </span>
                         </td>
-                        <td>{record.remarks}</td>
+                        <td style={{ padding: '12px', color: '#666' }}>{record.remarks}</td>
                       </tr>
                     ))}
-                    {attendanceHistory.length === 0 && !loading && <tr><td colSpan="4" style={{ textAlign: 'center' }}>No attendance records found for this period.</td></tr>}
+                    {attendanceHistory.length === 0 && !loading && <tr><td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>No attendance records found for this period.</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -345,7 +376,40 @@ export default function TeacherAttendance() {
   );
 }
 
-// Styling Constants
-const inputStyle = { padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px', boxSizing: 'border-box' };
-const buttonPrimaryStyle = { background: '#3498db', color: '#fff', padding: '8px 16px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' };
-const buttonSecondaryStyle = { background: '#95a5a6', color: '#fff', padding: '8px 16px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' };
+// Sub-components
+const StatCard = ({ label, value, color }) => (
+  <div style={{ flex: 1, minWidth: '120px', background: '#fff', border: `1px solid ${color}`, borderLeft: `5px solid ${color}`, borderRadius: '6px', padding: '10px 15px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
+    <div style={{ fontSize: '24px', fontWeight: 'bold', color: color }}>{value}</div>
+    <div style={{ fontSize: '12px', color: '#7f8c8d', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</div>
+  </div>
+);
+
+// Constants
+const statusOptions = [
+  { value: 'present', label: 'P', color: '#27ae60' },
+  { value: 'absent', label: 'A', color: '#e74c3c' },
+  { value: 'late', label: 'L', color: '#f39c12' },
+  { value: 'leave', label: 'Lv', color: '#3498db' },
+];
+
+// Styles
+const inputStyle = { padding: '10px 14px', border: '1px solid #dcdcdc', borderRadius: '6px', fontSize: '14px', width: '100%', boxSizing: 'border-box', outline: 'none', transition: 'border-color 0.2s' };
+const buttonPrimaryStyle = { background: '#3498db', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', transition: 'background 0.2s' };
+const buttonSecondaryStyle = { background: '#7f8c8d', color: '#fff', padding: '10px 20px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', transition: 'background 0.2s' };
+const buttonOutlineStyle = { background: 'transparent', border: '1px solid', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' };
+const tabActiveStyle = { background: '#fff', padding: '8px 20px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold', color: '#2c3e50', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' };
+const tabInactiveStyle = { background: 'transparent', padding: '8px 20px', borderRadius: '6px', border: 'none', cursor: 'pointer', color: '#7f8c8d' };
+
+const statusPillStyle = {
+  border: '1px solid #ddd',
+  padding: '6px 0',
+  width: '32px',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  fontWeight: 'bold',
+  fontSize: '12px',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  transition: 'all 0.1s ease-in-out'
+};
