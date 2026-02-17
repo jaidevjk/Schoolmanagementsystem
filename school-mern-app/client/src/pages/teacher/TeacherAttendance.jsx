@@ -2,170 +2,318 @@ import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 
 export default function TeacherAttendance() {
-  const [list, setList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingAttendance, setEditingAttendance] = useState(null);
-  const [form, setForm] = useState({ date: '', studentId: '', classId: '', status: 'present' });
-  const [students, setStudents] = useState([]);
   const [classes, setClasses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState('');
+  const [viewMode, setViewMode] = useState('take'); // 'take' or 'history'
+  const [loading, setLoading] = useState(false);
 
+  // Take Attendance State
+  const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0]);
+  const [students, setStudents] = useState([]);
+  const [attendanceData, setAttendanceData] = useState({}); // { studentId: { status, remarks } }
+
+  // History State
+  const [historyFilter, setHistoryFilter] = useState({
+    startDate: new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0],
+    studentId: ''
+  });
+  const [attendanceHistory, setAttendanceHistory] = useState([]);
+
+  // 1. Fetch Classes on Mount
   useEffect(() => {
-    refresh();
-    fetchStudents();
     fetchClasses();
   }, []);
 
-  const refresh = () => {
+  // 2. Fetch Students when Class changes
+  useEffect(() => {
+    if (selectedClass) {
+      fetchStudents(selectedClass);
+    } else {
+      setStudents([]);
+    }
+  }, [selectedClass]);
+
+  // 3. Fetch Attendance Data or History when dependencies change
+  useEffect(() => {
+    if (selectedClass) {
+      if (viewMode === 'take') {
+        fetchAttendanceForDate();
+      } else {
+        fetchAttendanceHistory();
+      }
+    }
+  }, [selectedClass, viewMode, attendanceDate, students]); // added students dependency
+
+  const fetchClasses = () => {
+    api.get('/classes')
+      .then(res => setClasses(Array.isArray(res.data) ? res.data : []))
+      .catch(err => console.error("Error fetching classes", err));
+  };
+
+  const fetchStudents = async (classId) => {
     setLoading(true);
-    api.get('/attendance')
-      .then((res) => setList(res.data))
-      .catch(() => { })
+    try {
+      const res = await api.get(`/students?classId=${classId}`);
+      setStudents(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Error fetching students", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAttendanceForDate = async () => {
+    if (!selectedClass || !attendanceDate || students.length === 0) return;
+
+    setLoading(true);
+    try {
+      const attendanceRes = await api.get(`/attendance?classId=${selectedClass}&date=${attendanceDate}`);
+      const existingAttendance = Array.isArray(attendanceRes.data) ? attendanceRes.data : [];
+
+      const initialData = {};
+      students.forEach(student => {
+        const record = existingAttendance.find(a => a.studentId?._id === student._id);
+        initialData[student._id] = {
+          status: record ? record.status : 'present',
+          remarks: record ? record.remarks : ''
+        };
+      });
+      setAttendanceData(initialData);
+    } catch (err) {
+      console.error("Error fetching attendance data", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAttendanceHistory = () => {
+    if (!selectedClass) return;
+    setLoading(true);
+    const { startDate, endDate, studentId } = historyFilter;
+    let query = `/attendance?classId=${selectedClass}&startDate=${startDate}&endDate=${endDate}`;
+    if (studentId) query += `&studentId=${studentId}`;
+
+    api.get(query)
+      .then(res => setAttendanceHistory(Array.isArray(res.data) ? res.data : []))
+      .catch(err => console.error("Error fetching history", err))
       .finally(() => setLoading(false));
   };
 
-  const fetchStudents = () => {
-    api.get('/students').then(res => setStudents(Array.isArray(res.data) ? res.data : [])).catch(() => { });
+  const handleAttendanceChange = (studentId, field, value) => {
+    setAttendanceData(prev => ({
+      ...prev,
+      [studentId]: { ...prev[studentId], [field]: value }
+    }));
   };
 
-  const fetchClasses = () => {
-    api.get('/classes').then(res => setClasses(Array.isArray(res.data) ? res.data : [])).catch(() => { });
-  };
-
-  const openModal = (attendance = null) => {
-    if (attendance) {
-      setEditingAttendance(attendance);
-      const dateStr = new Date(attendance.date).toISOString().split('T')[0];
-      setForm({ date: dateStr, studentId: attendance.studentId?._id || '', classId: attendance.classId?._id || '', status: attendance.status || 'present' });
-    } else {
-      setEditingAttendance(null);
-      const today = new Date().toISOString().split('T')[0];
-      setForm({ date: today, studentId: '', classId: '', status: 'present' });
-    }
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setEditingAttendance(null);
-    setForm({ date: '', studentId: '', classId: '', status: 'present' });
-  };
-
-  const handleFormChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleBulkSubmit = async () => {
+    if (!window.confirm("Save attendance for this class?")) return;
+    setLoading(true);
     try {
-      if (editingAttendance) {
-        await api.put(`/attendance/${editingAttendance._id}`, form);
-        alert('Attendance updated');
-      } else {
-        await api.post('/attendance', form);
-        alert('Attendance recorded');
-      }
-      refresh();
-      closeModal();
+      const entries = Object.entries(attendanceData).map(([studentId, data]) => ({
+        studentId,
+        status: data.status,
+        remarks: data.remarks
+      }));
+
+      await api.post('/attendance/bulk', {
+        classId: selectedClass,
+        date: attendanceDate,
+        entries
+      });
+      alert("Attendance saved successfully!");
+      // Refresh to ensure sync
+      fetchAttendanceForDate();
     } catch (err) {
-      alert(err.response?.data?.message || 'Error saving attendance');
+      console.error(err);
+      alert("Failed to save attendance");
+    } finally {
+      setLoading(false);
     }
   };
-
-  const deleteAttendance = async (a) => {
-    if (!confirm('Delete this attendance record?')) return;
-    try {
-      await api.delete(`/attendance/${a._id}`);
-      refresh();
-      alert('Attendance deleted');
-    } catch (err) {
-      alert('Failed to delete attendance');
-    }
-  };
-
-  if (loading) return <div className="loading">Loading...</div>;
 
   return (
-    <>
-      <div className="dash-card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3>Update Attendance</h3>
-          <button onClick={() => openModal()} className="btn" style={{ background: '#3498db', color: '#fff' }}>+ Mark Attendance</button>
+    <div className="dash-card">
+      <h3>Teacher Attendance</h3>
+
+      {/* Top Controls */}
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'end' }}>
+        <div style={{ minWidth: '200px' }}>
+          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Select Class</label>
+          <select
+            value={selectedClass}
+            onChange={(e) => setSelectedClass(e.target.value)}
+            style={inputStyle}
+          >
+            <option value="">-- Select Class --</option>
+            {classes.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+          </select>
         </div>
-        <p>View and manage attendance records for your classes.</p>
-        <div className="dash-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Student</th>
-                <th>Class</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {list.slice(0, 50).map((a) => (
-                <tr key={a._id}>
-                  <td>{new Date(a.date).toLocaleDateString()}</td>
-                  <td>{a.studentId?.name}</td>
-                  <td>{a.classId?.name}</td>
-                  <td><span className={`badge badge-${a.status === 'present' ? 'success' : a.status === 'absent' ? 'danger' : 'warning'}`}>{a.status}</span></td>
-                  <td>
-                    <button className="btn" onClick={() => openModal(a)} style={{ marginRight: 6 }}>Edit</button>
-                    <button className="btn" onClick={() => deleteAttendance(a)} style={{ background: '#e74c3c', color: '#fff' }}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {list.length > 50 && <p style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>Showing first 50 records</p>}
+
+        <div>
+          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Mode</label>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              className={`btn ${viewMode === 'take' ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setViewMode('take')}
+              style={viewMode === 'take' ? buttonPrimaryStyle : buttonSecondaryStyle}
+            >
+              Take Attendance
+            </button>
+            <button
+              className={`btn ${viewMode === 'history' ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setViewMode('history')}
+              style={viewMode === 'history' ? buttonPrimaryStyle : buttonSecondaryStyle}
+            >
+              View History
+            </button>
+          </div>
         </div>
       </div>
 
-      {showModal && (
-        <div style={modalOverlayStyle}>
-          <div style={modalStyle}>
-            <h2 style={{ marginBottom: '20px' }}>{editingAttendance ? 'Edit Attendance' : 'Mark Attendance'}</h2>
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Date *</label>
-                <input type="date" name="date" value={form.date} onChange={handleFormChange} required style={inputStyle} />
+      {loading && <div className="loading" style={{ margin: '10px 0' }}>Loading...</div>}
+
+      {!selectedClass ? (
+        <p>Please select a class to proceed.</p>
+      ) : (
+        <>
+          {viewMode === 'take' && (
+            <div className="animate-fade-in">
+              <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div>
+                  <label style={{ fontWeight: 'bold' }}>Date: </label>
+                  <input
+                    type="date"
+                    value={attendanceDate}
+                    onChange={(e) => setAttendanceDate(e.target.value)}
+                    style={{ ...inputStyle, marginLeft: '10px' }}
+                  />
+                </div>
+                <button onClick={handleBulkSubmit} style={buttonPrimaryStyle} disabled={students.length === 0}>Save Attendance</button>
               </div>
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Student *</label>
-                <select name="studentId" value={form.studentId} onChange={handleFormChange} required style={inputStyle}>
-                  <option value="">-- Select Student --</option>
-                  {students.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                </select>
+
+              <div className="dash-table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Roll No</th>
+                      <th>Student Name</th>
+                      <th>Status</th>
+                      <th>Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {students.map(s => (
+                      <tr key={s._id}>
+                        <td>{s.rollNumber || '-'}</td>
+                        <td>{s.name}</td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '10px' }}>
+                            {['present', 'absent', 'late', 'leave'].map(status => (
+                              <label key={status} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                <input
+                                  type="radio"
+                                  name={`status-${s._id}`}
+                                  checked={attendanceData[s._id]?.status === status}
+                                  onChange={() => handleAttendanceChange(s._id, 'status', status)}
+                                  style={{ marginRight: '5px' }}
+                                />
+                                <span style={{ textTransform: 'capitalize' }}>{status}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            placeholder="Optional remark"
+                            value={attendanceData[s._id]?.remarks || ''}
+                            onChange={(e) => handleAttendanceChange(s._id, 'remarks', e.target.value)}
+                            style={{ ...inputStyle, padding: '4px 8px' }}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                    {students.length === 0 && !loading && <tr><td colSpan="4" style={{ textAlign: 'center' }}>No students found in this class.</td></tr>}
+                  </tbody>
+                </table>
               </div>
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Class *</label>
-                <select name="classId" value={form.classId} onChange={handleFormChange} required style={inputStyle}>
-                  <option value="">-- Select Class --</option>
-                  {classes.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-                </select>
+            </div>
+          )}
+
+          {viewMode === 'history' && (
+            <div className="animate-fade-in">
+              {/* History Filters */}
+              <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'end' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Start Date</label>
+                  <input
+                    type="date"
+                    value={historyFilter.startDate}
+                    onChange={(e) => setHistoryFilter({ ...historyFilter, startDate: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>End Date</label>
+                  <input
+                    type="date"
+                    value={historyFilter.endDate}
+                    onChange={(e) => setHistoryFilter({ ...historyFilter, endDate: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>Student (Optional)</label>
+                  <select
+                    value={historyFilter.studentId}
+                    onChange={(e) => setHistoryFilter({ ...historyFilter, studentId: e.target.value })}
+                    style={inputStyle}
+                  >
+                    <option value="">-- All Students --</option>
+                    {students.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                  </select>
+                </div>
+                <button onClick={fetchAttendanceHistory} style={buttonPrimaryStyle}>Search</button>
               </div>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 'bold' }}>Status *</label>
-                <select name="status" value={form.status} onChange={handleFormChange} required style={inputStyle}>
-                  <option value="present">Present</option>
-                  <option value="absent">Absent</option>
-                  <option value="leave">Leave</option>
-                </select>
+
+              <div className="dash-table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Student</th>
+                      <th>Status</th>
+                      <th>Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {attendanceHistory.map(record => (
+                      <tr key={record._id}>
+                        <td>{new Date(record.date).toLocaleDateString()}</td>
+                        <td>{record.studentId?.name || 'Unknown'}</td>
+                        <td>
+                          <span className={`badge badge-${record.status === 'present' ? 'success' : record.status === 'absent' ? 'danger' : 'warning'}`}>
+                            {record.status}
+                          </span>
+                        </td>
+                        <td>{record.remarks}</td>
+                      </tr>
+                    ))}
+                    {attendanceHistory.length === 0 && !loading && <tr><td colSpan="4" style={{ textAlign: 'center' }}>No attendance records found for this period.</td></tr>}
+                  </tbody>
+                </table>
               </div>
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                <button type="button" onClick={closeModal} style={buttonSecondaryStyle}>Cancel</button>
-                <button type="submit" style={buttonPrimaryStyle}>{editingAttendance ? 'Update' : 'Save'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
+            </div>
+          )}
+        </>
       )}
-    </>
+    </div>
   );
 }
 
-const modalOverlayStyle = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 };
-const modalStyle = { background: '#fff', padding: '24px', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' };
-const inputStyle = { width: '100%', padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px', boxSizing: 'border-box' };
+// Styling Constants
+const inputStyle = { padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px', boxSizing: 'border-box' };
 const buttonPrimaryStyle = { background: '#3498db', color: '#fff', padding: '8px 16px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' };
 const buttonSecondaryStyle = { background: '#95a5a6', color: '#fff', padding: '8px 16px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' };
