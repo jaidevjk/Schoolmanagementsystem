@@ -73,3 +73,43 @@ export const deleteMarks = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const bulkUpdateMarks = async (req, res) => {
+  try {
+    const { classId, subjectId, examType, academicYear, marks } = req.body;
+
+    if (!classId || !subjectId || !examType || !Array.isArray(marks)) {
+      return res.status(400).json({ message: 'Missing required fields: classId, subjectId, examType, marks array.' });
+    }
+
+    const promises = marks.map(async (entry) => {
+      const { studentId, marksObtained, maxMarks } = entry;
+      if (!studentId) return null;
+
+      const filter = {
+        studentId,
+        subjectId,
+        classId,
+        examType,
+        academicYear
+      };
+
+      const update = {
+        marksObtained,
+        maxMarks: maxMarks || 100,
+        enteredBy: req.user._id
+      };
+
+      return Marks.findOneAndUpdate(filter, update, {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true
+      }).populate('studentId');
+    });
+
+    const savedMarks = await Promise.all(promises);
+    res.json(savedMarks.filter(m => m !== null));
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
