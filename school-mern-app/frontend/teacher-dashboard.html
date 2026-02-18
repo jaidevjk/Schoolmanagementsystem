@@ -252,16 +252,42 @@
     }
 
     .stat-card h3 {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
       text-transform: uppercase;
-      margin-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
     }
 
     .stat-card .value {
-      font-size: 2.2rem;
+      font-size: 2.5rem;
       font-weight: 700;
       color: var(--text);
+      line-height: 1;
+    }
+
+    .activity-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f2f5;
+      color: var(--primary);
     }
 
     .dash-card {
@@ -319,6 +345,91 @@
       background: rgba(255, 255, 255, 0.2);
       color: #fff;
     }
+
+    /* Exact Replication Styles */
+    .stat-card-pill {
+      flex: 1;
+      min-width: 120px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 10px 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .status-pill {
+      border: 1px solid #ddd;
+      padding: 6px 0;
+      width: 32px;
+      height: 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 11px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.1s ease-in-out;
+      background: #fff;
+      color: #666;
+    }
+
+    .status-pill.active-p {
+      background: #27ae60 !important;
+      color: #fff !important;
+      border-color: #27ae60 !important;
+    }
+
+    .status-pill.active-a {
+      background: #e74c3c !important;
+      color: #fff !important;
+      border-color: #e74c3c !important;
+    }
+
+    .status-pill.active-l {
+      background: #f39c12 !important;
+      color: #fff !important;
+      border-color: #f39c12 !important;
+    }
+
+    .status-pill.active-lv {
+      background: #3498db !important;
+      color: #fff !important;
+      border-color: #3498db !important;
+    }
+
+    /* Sticky Columns for Matrix */
+    .sticky-col-roll {
+      position: sticky;
+      left: 0;
+      background: #f8f9fa;
+      z-index: 11;
+      width: 80px;
+    }
+
+    .sticky-col-name {
+      position: sticky;
+      left: 80px;
+      background: #f8f9fa;
+      z-index: 11;
+      width: 150px;
+    }
+
+    .sticky-cell-roll {
+      position: sticky;
+      left: 0;
+      background: #f8f9fa;
+      z-index: 9;
+      font-weight: bold;
+    }
+
+    .sticky-cell-name {
+      position: sticky;
+      left: 80px;
+      background: #f8f9fa;
+      z-index: 9;
+      font-weight: bold;
+    }
   </style>
 </head>
 
@@ -369,24 +480,37 @@
 
     <!-- VIEW: DASHBOARD -->
     <div id="view-dashboard" class="view-section">
-      <div class="grid-cards">
+      <div class="dash-card">
+        <h3>Teacher Dashboard</h3>
+        <p style="color: #666; margin-bottom: 20px;">Manage classes, attendance, assignments, grades and messages.</p>
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #eee;">
+          <p style="margin-bottom: 10px;"><strong>Employee ID:</strong> <span id="prof-emp-id">-</span></p>
+          <p style="margin-bottom: 10px;"><strong>Email:</strong> <span id="prof-email">-</span></p>
+          <p style="margin-bottom: 10px;"><strong>Qualification:</strong> <span id="prof-qual">-</span></p>
+          <p style="margin-bottom: 0;"><strong>Classes:</strong> <span id="prof-classes">-</span></p>
+        </div>
+      </div>
+
+      <div class="grid-cards" style="margin-top: 2rem;">
         <div class="stat-card">
           <h3>My Classes</h3>
-          <div class="value">4</div>
+          <div class="value" id="stat-classes">0</div>
         </div>
         <div class="stat-card">
           <h3>Total Students</h3>
-          <div class="value">120</div>
+          <div class="value" id="stat-students">0</div>
         </div>
         <div class="stat-card">
           <h3>Pending Marks</h3>
-          <div class="value">2</div>
+          <div class="value" id="stat-pending">0</div>
         </div>
       </div>
 
       <div class="dash-card">
         <h3>Recent Activity</h3>
-        <p style="color: #777;">No recent activity.</p>
+        <div id="recent-activity-list">
+          <p style="color: #777;">No recent activity.</p>
+        </div>
       </div>
     </div>
 
@@ -395,7 +519,7 @@
       <div class="dash-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
           <h3>Attendance Management</h3>
-          <div style="display: flex; gap: 5px; background: #f0f2f5; padding: 4px; borderRadius: 8px;">
+          <div style="display: flex; gap: 5px; background: #f0f2f5; padding: 4px; border-radius: 8px;">
             <button onclick="setAttendanceSubView('take')" id="btn-att-take" class="btn btn-sm"
               style="background:#fff; font-weight:bold;">Take Attendance</button>
             <button onclick="setAttendanceSubView('history')" id="btn-att-history" class="btn btn-sm">History</button>
@@ -420,32 +544,40 @@
           </div>
 
           <div id="bulk-att-container" style="display: none;">
-            <!-- Stats Row -->
-            <div class="grid-cards"
-              style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 15px;">
-              <div class="stat-card" style="padding: 10px; border-left: 4px solid #34495e;">
-                <h3 style="font-size: 10px;">Total</h3>
-                <div class="value" id="att-stat-total" style="font-size: 1.5rem;">0</div>
+            <!-- Stats Dashboard -->
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+              <div class="stat-card-pill" style="border-left: 5px solid #34495e;">
+                <div style="font-size: 24px; font-weight: bold; color: #34495e;" id="att-stat-total">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase;">Total Students</div>
               </div>
-              <div class="stat-card" style="padding: 10px; border-left: 4px solid #2ecc71;">
-                <h3 style="font-size: 10px;">Present</h3>
-                <div class="value" id="att-stat-present" style="font-size: 1.5rem;">0</div>
+              <div class="stat-card-pill" style="border-left: 5px solid #27ae60;">
+                <div style="font-size: 24px; font-weight: bold; color: #27ae60;" id="att-stat-present">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase;">Present</div>
               </div>
-              <div class="stat-card" style="padding: 10px; border-left: 4px solid #e74c3c;">
-                <h3 class="font-size: 10px;">Absent</h3>
-                <div class="value" id="att-stat-absent" style="font-size: 1.5rem;">0</div>
+              <div class="stat-card-pill" style="border-left: 5px solid #e74c3c;">
+                <div style="font-size: 24px; font-weight: bold; color: #e74c3c;" id="att-stat-absent">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase;">Absent</div>
+              </div>
+              <div class="stat-card-pill" style="border-left: 5px solid #f39c12;">
+                <div style="font-size: 24px; font-weight: bold; color: #f39c12;" id="att-stat-late">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase;">Late</div>
+              </div>
+              <div class="stat-card-pill" style="border-left: 5px solid #3498db;">
+                <div style="font-size: 24px; font-weight: bold; color: #3498db;" id="att-stat-leave">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase;">Leave</div>
               </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
               <div>
-                <button onclick="markAllAttendance('present')" class="btn btn-sm"
-                  style="border:1px solid #2ecc71; color:#2ecc71;">Mark All Present</button>
-                <button onclick="markAllAttendance('absent')" class="btn btn-sm"
-                  style="border:1px solid #e74c3c; color:#e74c3c; margin-left:5px;">Mark All Absent</button>
+                <button onclick="markAllAttendance('present')"
+                  style="background:transparent; border:1px solid #27ae60; color:#27ae60; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px; margin-right:8px;">Mark
+                  All Present</button>
+                <button onclick="markAllAttendance('absent')"
+                  style="background:transparent; border:1px solid #e74c3c; color:#e74c3c; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px;">Mark
+                  All Absent</button>
               </div>
-              <button onclick="saveBulkAttendance()" class="btn btn-success"
-                style="background:#2ecc71; color:#fff;">Save Attendance</button>
+              <button onclick="saveBulkAttendance()" class="btn btn-primary">Save Attendance</button>
             </div>
 
             <div class="dash-table-wrap">
@@ -466,15 +598,39 @@
 
         <!-- History Sub-View -->
         <div id="att-sub-history" style="display: none;">
-          <div class="dash-table-wrap">
-            <table>
-              <thead>
+          <div
+            style="display: flex; gap: 15px; margin-bottom: 20px; align-items: end; background: #fff; padding: 20px; border: 1px solid #eee; border-radius: 8px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 150px;">
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #666;">Start
+                Date</label>
+              <input type="date" id="att-hist-start"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+            </div>
+            <div style="flex: 1; min-width: 150px;">
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #666;">End
+                Date</label>
+              <input type="date" id="att-hist-end"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+            </div>
+            <div style="flex: 1; min-width: 180px;">
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #666;">Filter by
+                Student</label>
+              <select id="att-hist-student" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                <option value="">-- All Students --</option>
+              </select>
+            </div>
+            <button onclick="loadAttendanceHistory()" class="btn btn-primary" style="height: 42px;">Search
+              Records</button>
+          </div>
+          <div class="dash-table-wrap"
+            style="box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; background: #fff;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <thead style="background: #f8f9fa;">
                 <tr>
-                  <th>Date</th>
-                  <th>Student</th>
-                  <th>Class</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #eee;">Date</th>
+                  <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #eee;">Student</th>
+                  <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #eee;">Status</th>
+                  <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #eee;">Remarks</th>
                 </tr>
               </thead>
               <tbody id="attendanceHistoryTable"></tbody>
@@ -502,21 +658,24 @@
         <!-- Enter Marks Sub-View (Bulk) -->
         <div id="marks-sub-enter">
           <div
-            style="display: flex; gap: 15px; margin-bottom: 20px; align-items: end; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+            style="display: flex; gap: 15px; margin-bottom: 20px; align-items: end; flex-wrap: wrap; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #eee;">
             <div style="flex: 1; min-width: 150px;">
-              <label style="display:block; font-size:12px; margin-bottom:4px; font-weight:bold;">Class</label>
+              <label
+                style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Class</label>
               <select id="marks-class-select" class="form-control"
-                style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;"></select>
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"></select>
             </div>
             <div style="flex: 1; min-width: 150px;">
-              <label style="display:block; font-size:12px; margin-bottom:4px; font-weight:bold;">Subject</label>
+              <label
+                style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Subject</label>
               <select id="marks-subject-select" class="form-control"
-                style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;"></select>
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"></select>
             </div>
             <div style="flex: 1; min-width: 120px;">
-              <label style="display:block; font-size:12px; margin-bottom:4px; font-weight:bold;">Exam</label>
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Exam
+                Type</label>
               <select id="marks-exam-select" class="form-control"
-                style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
                 <option value="midterm">Midterm</option>
                 <option value="final">Final</option>
                 <option value="quiz">Quiz</option>
@@ -524,29 +683,41 @@
               </select>
             </div>
             <div style="flex: 0.5; min-width: 80px;">
-              <label style="display:block; font-size:12px; margin-bottom:4px; font-weight:bold;">Year</label>
-              <input type="text" id="marks-year-input" value="2024-2025"
-                style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+              <label
+                style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Year</label>
+              <input type="text" id="marks-year-input" class="form-control" value="2025"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
             </div>
-            <button onclick="fetchBulkStudentsForMarks()" class="btn btn-primary">Get List</button>
+            <button onclick="fetchBulkStudentsForMarks()" class="btn btn-primary" style="height: 42px;">Get Student
+              List</button>
           </div>
 
           <div id="bulk-marks-container" style="display: none;">
-            <!-- Stats Row -->
-            <div class="grid-cards"
-              style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-bottom: 15px;">
-              <div class="stat-card" style="padding: 10px; border-left: 4px solid #3498db;">
-                <h3 style="font-size: 10px;">Average</h3>
-                <div class="value" id="marks-stat-avg" style="font-size: 1.5rem;">0%</div>
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+              <div class="stat-card-pill" style="border-left: 4px solid #3498db;">
+                <div style="font-size: 20px; font-weight: bold; color: #2c3e50;" id="marks-stat-avg">0%</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase; margin-top: 4px;">Class Average
+                </div>
               </div>
-              <div class="stat-card" style="padding: 10px; border-left: 4px solid #f1c40f;">
-                <h3 style="font-size: 10px;">Highest</h3>
-                <div class="value" id="marks-stat-high" style="font-size: 1.5rem;">0</div>
+              <div class="stat-card-pill" style="border-left: 4px solid #27ae60;">
+                <div style="font-size: 20px; font-weight: bold; color: #2c3e50;" id="marks-stat-high">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase; margin-top: 4px;">Highest</div>
               </div>
-              <div class="stat-card" style="padding: 10px; border-left: 4px solid #8e44ad;">
-                <h3 style="font-size: 10px;">Graded</h3>
-                <div class="value" id="marks-stat-count" style="font-size: 1.5rem;">0</div>
+              <div class="stat-card-pill" style="border-left: 4px solid #e74c3c;">
+                <div style="font-size: 20px; font-weight: bold; color: #2c3e50;" id="marks-stat-low">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase; margin-top: 4px;">Lowest</div>
               </div>
+              <div class="stat-card-pill" style="border-left: 4px solid #8e44ad;">
+                <div style="font-size: 20px; font-weight: bold; color: #2c3e50;" id="marks-stat-count">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase; margin-top: 4px;">Papers Graded
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+              <button onclick="saveBulkMarks()" class="btn"
+                style="background: #27ae60; color: white; padding: 10px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Save
+                All Marks</button>
             </div>
 
             <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
@@ -574,39 +745,76 @@
         <!-- Class Results Sub-View -->
         <div id="marks-sub-results" style="display: none;">
           <div
-            style="display: flex; gap: 15px; margin-bottom: 20px; align-items: end; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-            <div style="flex: 1;">
-              <label style="display:block; font-size:12px; margin-bottom:4px; font-weight:bold;">Class</label>
+            style="display: flex; gap: 15px; margin-bottom: 20px; align-items: end; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #eee; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 180px;">
+              <label
+                style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Class</label>
               <select id="results-class-select" class="form-control"
-                style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;"></select>
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"></select>
             </div>
-            <button onclick="fetchClassMatrix()" class="btn btn-primary">View Matrix</button>
+            <div style="flex: 1; min-width: 150px;">
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Exam
+                Type</label>
+              <select id="results-exam-select" class="form-control"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                <option value="midterm" selected>Midterm</option>
+                <option value="final">Final</option>
+                <option value="quiz">Quiz</option>
+                <option value="assignment">Assignment</option>
+              </select>
+            </div>
+            <div style="flex: 0.5; min-width: 80px;">
+              <label
+                style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Year</label>
+              <input type="text" id="results-year-input" value="2025"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+            </div>
+            <button onclick="fetchClassResults()" class="btn btn-primary" style="height: 42px;">Get Class
+              Results</button>
           </div>
-          <div class="dash-table-wrap" id="matrix-container" style="overflow-x: auto;">
-            <!-- Matrix table will be generated here -->
+          <div id="results-matrix-container"
+            style="display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 8px; overflow: auto; background: #fff;">
+            <table style="width:100%; border-collapse: collapse; min-width: 800px;">
+              <thead style="background: #f8f9fa;">
+                <tr id="results-matrix-head"></tr>
+              </thead>
+              <tbody id="results-matrix-body"></tbody>
+            </table>
           </div>
         </div>
 
         <!-- Student History Sub-View -->
         <div id="marks-sub-history" style="display: none;">
           <div
-            style="display: flex; gap: 15px; margin-bottom: 20px; align-items: end; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-            <div style="flex: 1;">
-              <label style="display:block; font-size:12px; margin-bottom:4px; font-weight:bold;">Student</label>
-              <select id="history-student-select" class="form-control"
-                style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;"></select>
+            style="display: flex; gap: 15px; margin-bottom: 20px; align-items: end; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #eee; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Select
+                Class</label>
+              <select id="history-class-select" class="form-control" onchange="loadHistoryStudents(this.value)"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"></select>
             </div>
-            <button onclick="fetchStudentMarksHistory()" class="btn btn-primary">View History</button>
+            <div style="flex: 1; min-width: 200px;">
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Select
+                Student</label>
+              <select id="history-student-select" class="form-control"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                <option value="">-- Select Student --</option>
+              </select>
+            </div>
+            <button onclick="fetchStudentMarksHistory()" class="btn btn-primary" style="height: 42px;">Get
+              History</button>
           </div>
-          <div class="dash-table-wrap">
-            <table>
-              <thead>
+          <div id="student-history-container"
+            style="display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; background: #fff;">
+            <table style="width:100%; border-collapse: collapse;">
+              <thead style="background: #f8f9fa;">
                 <tr>
-                  <th>Subject</th>
-                  <th>Exam</th>
-                  <th>Marks</th>
-                  <th>Max</th>
-                  <th>Year</th>
+                  <th style="padding: 15px; text-align: left; border-bottom: 2px solid #eee;">Subject</th>
+                  <th style="padding: 15px; text-align: left; border-bottom: 2px solid #eee;">Exam Type</th>
+                  <th style="padding: 15px; text-align: left; border-bottom: 2px solid #eee;">Marks</th>
+                  <th style="padding: 15px; text-align: left; border-bottom: 2px solid #eee;">Max Marks</th>
+                  <th style="padding: 15px; text-align: left; border-bottom: 2px solid #eee;">%</th>
+                  <th style="padding: 15px; text-align: left; border-bottom: 2px solid #eee;">Academic Year</th>
                 </tr>
               </thead>
               <tbody id="studentMarksHistoryTable"></tbody>
@@ -747,32 +955,93 @@
 
     async function loadTeacherStats() {
       try {
-        const [cRes, sRes] = await Promise.all([
+        const [cRes, sRes, mRes, aRes, uRes] = await Promise.all([
           fetch(`${API_BASE}/classes`, { headers: getHeaders() }),
-          fetch(`${API_BASE}/students`, { headers: getHeaders() })
+          fetch(`${API_BASE}/students`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/marks`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/attendance`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/auth/me`, { headers: getHeaders() })
         ]);
+
         const classes = await cRes.json();
         const students = await sRes.json();
-        const cCount = Array.isArray(classes) ? classes.length : (classes.data ? classes.data.length : 0);
-        const sCount = Array.isArray(students) ? students.length : (students.data ? students.data.length : 0);
+        const marks = await mRes.json();
+        const attendance = await aRes.json();
+        const userProfile = await uRes.json();
+
+        const cList = Array.isArray(classes) ? classes : (classes.data || []);
+        const sList = Array.isArray(students) ? students : (students.data || []);
+        const mList = Array.isArray(marks) ? marks : (marks.data || []);
+        const aList = Array.isArray(attendance) ? attendance : (attendance.data || []);
+
+        // Stats UI elements
+        document.getElementById('stat-classes').innerText = cList.length;
+        document.getElementById('stat-students').innerText = sList.length;
+
+        // Profile Details
+        const prof = userProfile.teacherProfile || {};
+        document.getElementById('prof-emp-id').innerText = prof.employeeId || '-';
+        document.getElementById('prof-email').innerText = userProfile.email || '-';
+        document.getElementById('prof-qual').innerText = prof.qualification || '-';
+        document.getElementById('prof-classes').innerText = prof.classIds ? prof.classIds.map(c => c.name).join(', ') : '-';
+
+        // "Pending Marks" Calculation
+        const subRes = await fetch(`${API_BASE}/subjects`, { headers: getHeaders() });
+        const subs = await subRes.json();
+        const subList = Array.isArray(subs) ? subs : (subs.data || []);
+        document.getElementById('stat-pending').innerText = Math.max(0, subList.length - mList.length);
 
         // Populate dropdowns globally
-        const classOptions = (Array.isArray(classes) ? classes : (classes.data || [])).map(c => `<option value="${c._id}">${c.name}</option>`).join('');
+        const classOptions = cList.map(c => `<option value="${c._id}">${c.name}</option>`).join('');
         document.getElementById('att-class-select').innerHTML = '<option value="">-- Class --</option>' + classOptions;
         document.getElementById('marks-class-select').innerHTML = '<option value="">-- Class --</option>' + classOptions;
         document.getElementById('results-class-select').innerHTML = '<option value="">-- Class --</option>' + classOptions;
+        document.getElementById('history-class-select').innerHTML = '<option value="">-- Select Class --</option>' + classOptions;
 
-        const studentOptions = (Array.isArray(students) ? students : (students.data || [])).map(s => `<option value="${s._id}">${s.name}</option>`).join('');
+        const studentOptions = sList.map(s => `<option value="${s._id}">${s.name}</option>`).join('');
         document.getElementById('history-student-select').innerHTML = '<option value="">-- Select Student --</option>' + studentOptions;
 
-        const subRes = await fetch(`${API_BASE}/subjects`, { headers: getHeaders() });
-        const subs = await subRes.json();
-        const subOptions = (Array.isArray(subs) ? subs : (subs.data || [])).map(s => `<option value="${s._id}">${s.name}</option>`).join('');
+        const subOptions = subList.map(s => `<option value="${s._id}">${s.name}</option>`).join('');
         document.getElementById('marks-subject-select').innerHTML = '<option value="">-- Subject --</option>' + subOptions;
 
-        // Update stats UI
-        document.querySelectorAll('.stat-card .value')[0].innerText = cCount; // Classes
-        document.querySelectorAll('.stat-card .value')[1].innerText = sCount; // Students
+        // Recent Activity Simulation
+        const activityList = document.getElementById('recent-activity-list');
+        const activities = [];
+
+        // Add most recent attendance
+        if (aList.length > 0) {
+          const lastA = aList[0];
+          activities.push({
+            icon: 'fa-calendar-check',
+            text: `Attendance marked for <b>${lastA.classId?.name || 'Class'}</b>`,
+            time: new Date(lastA.date).toLocaleDateString()
+          });
+        }
+
+        // Add most recent marks
+        if (mList.length > 0) {
+          const lastM = mList[0];
+          activities.push({
+            icon: 'fa-file-pen',
+            text: `Marks entered for <b>${lastM.studentId?.name || 'Student'}</b> (${lastM.subjectId?.name || 'Subject'})`,
+            time: 'Recently'
+          });
+        }
+
+        if (activities.length > 0) {
+          activityList.innerHTML = activities.map(act => `
+            <div class="activity-item">
+              <div class="activity-icon"><i class="fa-solid ${act.icon}"></i></div>
+              <div style="flex:1;">
+                <p style="font-size:0.9rem; color:var(--text);">${act.text}</p>
+                <small style="color:var(--text-muted); font-size:0.75rem;">${act.time}</small>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          activityList.innerHTML = '<p style="color: #777; font-size:0.9rem;">No recent activity.</p>';
+        }
+
       } catch (e) { console.error(e); }
     }
 
@@ -854,13 +1123,14 @@
           <td>${item.roll || '-'}</td>
           <td><b>${item.name}</b></td>
           <td>
-            <div style="display:flex; gap:5px;">
-              <button onclick="updateAttStatus(${idx}, 'present')" class="btn btn-sm" style="background:${item.status === 'present' ? '#2ecc71' : '#f0f2f5'}; color:${item.status === 'present' ? '#fff' : '#666'}; border:1px solid #ddd;">P</button>
-              <button onclick="updateAttStatus(${idx}, 'absent')" class="btn btn-sm" style="background:${item.status === 'absent' ? '#e74c3c' : '#f0f2f5'}; color:${item.status === 'absent' ? '#fff' : '#666'}; border:1px solid #ddd;">A</button>
-              <button onclick="updateAttStatus(${idx}, 'leave')" class="btn btn-sm" style="background:${item.status === 'leave' ? '#3498db' : '#f0f2f5'}; color:${item.status === 'leave' ? '#fff' : '#666'}; border:1px solid #ddd;">L</button>
+            <div style="display:flex; gap:8px;">
+              <button onclick="updateAttStatus(${idx}, 'present')" class="status-pill ${item.status === 'present' ? 'active-p' : ''}">P</button>
+              <button onclick="updateAttStatus(${idx}, 'absent')" class="status-pill ${item.status === 'absent' ? 'active-a' : ''}">A</button>
+              <button onclick="updateAttStatus(${idx}, 'late')" class="status-pill ${item.status === 'late' ? 'active-l' : ''}">L</button>
+              <button onclick="updateAttStatus(${idx}, 'leave')" class="status-pill ${item.status === 'leave' ? 'active-lv' : ''}">Lv</button>
             </div>
           </td>
-          <td><input type="text" onchange="updateAttRemarks(${idx}, this.value)" value="${item.remarks}" class="form-control" style="width:100%; border:1px solid #ddd; padding:4px;"></td>
+          <td><input type="text" placeholder="Note..." onchange="updateAttRemarks(${idx}, this.value)" value="${item.remarks}" class="form-control" style="width:100%; border:1px solid #ddd; padding:6px 10px; border-radius:4px;"></td>
         </tr>
       `).join('');
 
@@ -883,9 +1153,47 @@
       const total = currentBulkAttendance.length;
       const present = currentBulkAttendance.filter(i => i.status === 'present').length;
       const absent = currentBulkAttendance.filter(i => i.status === 'absent').length;
+      const late = currentBulkAttendance.filter(i => i.status === 'late').length;
+      const leave = currentBulkAttendance.filter(i => i.status === 'leave').length;
       document.getElementById('att-stat-total').innerText = total;
       document.getElementById('att-stat-present').innerText = present;
       document.getElementById('att-stat-absent').innerText = absent;
+      document.getElementById('att-stat-late').innerText = late;
+      document.getElementById('att-stat-leave').innerText = leave;
+    }
+
+    async function fetchBulkAttendance() {
+      const classId = document.getElementById('att-class-select').value;
+      const date = document.getElementById('att-date-input').value;
+      if (!classId || !date) return alert("Select Class and Date");
+
+      try {
+        const [sRes, aRes] = await Promise.all([
+          fetch(`${API_BASE}/students?classId=${classId}&status=active`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/attendance?classId=${classId}&date=${date}`, { headers: getHeaders() })
+        ]);
+        const students = await sRes.json();
+        const attendance = await aRes.json();
+        const sList = Array.isArray(students) ? students : (students.data || []);
+        const aList = Array.isArray(attendance) ? attendance : (attendance.data || []);
+
+        currentBulkAttendance = sList.map(s => {
+          const record = aList.find(r => r.studentId?._id === s._id);
+          return {
+            studentId: s._id,
+            name: s.name,
+            roll: s.rollNumber,
+            status: record ? record.status : 'present',
+            remarks: record ? record.remarks : ''
+          };
+        });
+
+        // Populate history student dropdown while we are at it
+        document.getElementById('att-hist-student').innerHTML = '<option value="">-- All Students --</option>' +
+          sList.map(s => `<option value="${s._id}">${s.name}</option>`).join('');
+
+        renderBulkAttendance();
+      } catch (e) { console.error(e); }
     }
 
     async function saveBulkAttendance() {
@@ -899,25 +1207,52 @@
           headers: getHeaders(),
           body: JSON.stringify({ classId, date, entries })
         });
-        if (res.ok) alert("Attendance saved!");
-        else alert("Failed to save");
+        if (res.ok) alert("Attendance saved successully!");
+        else alert("Failed to save attendance.");
       } catch (e) { console.error(e); }
     }
 
+    function initAttendanceDates() {
+      const today = new Date().toISOString().split('T')[0];
+      const lastWeek = new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0];
+      document.getElementById('att-date-input').value = today;
+      document.getElementById('att-hist-start').value = lastWeek;
+      document.getElementById('att-hist-end').value = today;
+    }
+    initAttendanceDates();
+
     async function loadAttendanceHistory() {
+      const classId = document.getElementById('att-class-select').value;
+      if (!classId) return;
+
+      const startDate = document.getElementById('att-hist-start').value;
+      const endDate = document.getElementById('att-hist-end').value;
+      const studentId = document.getElementById('att-hist-student').value;
+
+      let query = `${API_BASE}/attendance?classId=${classId}&startDate=${startDate}&endDate=${endDate}`;
+      if (studentId) query += `&studentId=${studentId}`;
+
       try {
-        const res = await fetch(`${API_BASE}/attendance`, { headers: getHeaders() });
+        const res = await fetch(query, { headers: getHeaders() });
         const data = await res.json();
         const list = Array.isArray(data) ? data : (data.data || []);
         document.getElementById('attendanceHistoryTable').innerHTML = list.map(a => `
-          <tr>
-            <td>${new Date(a.date).toLocaleDateString()}</td>
-            <td><b>${a.studentId ? a.studentId.name : '-'}</b></td>
-            <td>${a.classId ? a.classId.name : '-'}</td>
-            <td><span class="badge badge-${a.status === 'present' ? 'success' : a.status === 'absent' ? 'danger' : 'warning'}">${a.status}</span></td>
-            <td><button class="btn btn-sm" onclick="deleteAttendance('${a._id}')">Delete</button></td>
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 12px 15px;">${new Date(a.date).toLocaleDateString()}</td>
+            <td style="padding: 12px 15px;"><b>${a.studentId ? a.studentId.name : 'Unknown'}</b></td>
+            <td style="padding: 12px 15px;">
+              <span style="padding: 4px 8px; border-radius: 12px; fontSize: 11px; font-weight: bold; text-transform: uppercase; 
+                background: ${a.status === 'present' ? '#e8f8f5' : a.status === 'absent' ? '#fdedec' : '#fef9e7'}; 
+                color: ${a.status === 'present' ? '#27ae60' : a.status === 'absent' ? '#c0392b' : '#f39c12'};">
+                ${a.status}
+              </span>
+            </td>
+            <td style="padding: 12px 15px; color: #666;">${a.remarks || ''}</td>
           </tr>
         `).join('');
+        if (list.length === 0) {
+          document.getElementById('attendanceHistoryTable').innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: #999;">No attendance records found for this period.</td></tr>';
+        }
       } catch (e) { console.error(e); }
     }
 
@@ -1012,226 +1347,109 @@
       } catch (e) { console.error(e); }
     }
 
-    async function fetchClassMatrix() {
+    async function fetchClassResults() {
       const classId = document.getElementById('results-class-select').value;
-      if (!classId) return;
+      const exam = document.getElementById('results-exam-select').value;
+      const year = document.getElementById('results-year-input').value;
+      if (!classId) return alert("Please select a class.");
+
       try {
         const [sRes, mRes, subRes] = await Promise.all([
           fetch(`${API_BASE}/students?classId=${classId}&status=active`, { headers: getHeaders() }),
-          fetch(`${API_BASE}/marks?classId=${classId}`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/marks?classId=${classId}&examType=${exam}&academicYear=${year}`, { headers: getHeaders() }),
           fetch(`${API_BASE}/subjects`, { headers: getHeaders() })
         ]);
-        const sList = await sRes.json();
-        const mList = await mRes.json();
+
+        const students = await sRes.json();
+        const allMarks = await mRes.json();
         const subjects = await subRes.json();
 
-        const students = Array.isArray(sList) ? sList : sList.data;
-        const marks = Array.isArray(mList) ? mList : mList.data;
-        const subs = Array.isArray(subjects) ? subjects : subjects.data;
+        const sList = Array.isArray(students) ? students : (students.data || []);
+        const mList = Array.isArray(allMarks) ? allMarks : (allMarks.data || []);
+        const subList = Array.isArray(subjects) ? subjects : (subjects.data || []);
 
-        let html = `<table><thead><tr><th>Student</th>`;
-        subs.forEach(s => html += `<th>${s.name}</th>`);
-        html += `</tr></thead><tbody>`;
-
-        students.forEach(st => {
-          html += `<tr><td><b>${st.name}</b></td>`;
-          subs.forEach(sub => {
-            const m = marks.find(r => r.studentId?._id === st._id && r.subjectId?._id === sub._id);
-            html += `<td>${m ? m.marksObtained : '-'}</td>`;
-          });
-          html += `</tr>`;
+        // Process marks into map: studentId -> subjectId -> marksObtained
+        const marksMap = {};
+        mList.forEach(m => {
+          const sid = m.studentId?._id || m.studentId;
+          const subId = m.subjectId?._id || m.subjectId;
+          if (!marksMap[sid]) marksMap[sid] = {};
+          marksMap[sid][subId] = m.marksObtained;
         });
-        html += `</tbody></table>`;
-        document.getElementById('matrix-container').innerHTML = html;
+
+        // Generate Table Header
+        let headerHtml = `<th class="sticky-col-roll">Roll</th><th class="sticky-col-name">Student</th>`;
+        subList.forEach(sub => {
+          headerHtml += `<th style="text-align:center;">${sub.name}</th>`;
+        });
+        document.getElementById('results-matrix-head').innerHTML = headerHtml;
+
+        // Generate Table Body
+        let bodyHtml = '';
+        sList.forEach(student => {
+          bodyHtml += `<tr>
+            <td class="sticky-cell-roll">${student.rollNumber || '-'}</td>
+            <td class="sticky-cell-name">${student.name}</td>`;
+          subList.forEach(sub => {
+            const mark = marksMap[student._id] ? marksMap[student._id][sub._id] : undefined;
+            bodyHtml += `<td style="text-align:center;">${mark !== undefined ? `<b>${mark}</b>` : '<span style="color:#ccc">-</span>'}</td>`;
+          });
+          bodyHtml += `</tr>`;
+        });
+        document.getElementById('results-matrix-body').innerHTML = bodyHtml;
+        document.getElementById('results-matrix-container').style.display = 'block';
+
+      } catch (e) {
+        console.error(e);
+        alert("Failed to load results");
+      }
+    }
+
+    async function loadHistoryStudents(classId) {
+      if (!classId) {
+        document.getElementById('history-student-select').innerHTML = '<option value="">-- Select Student --</option>';
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/students?classId=${classId}&status=active`, { headers: getHeaders() });
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.data || []);
+        document.getElementById('history-student-select').innerHTML = '<option value="">-- Select Student --</option>' +
+          list.map(s => `<option value="${s._id}">${s.name} (${s.rollNumber || '-'})</option>`).join('');
       } catch (e) { console.error(e); }
     }
 
     async function fetchStudentMarksHistory() {
-      const sid = document.getElementById('history-student-select').value;
-      if (!sid) return;
+      const studentId = document.getElementById('history-student-select').value;
+      if (!studentId) return alert("Please select a student.");
+
       try {
-        const res = await fetch(`${API_BASE}/marks?studentId=${sid}`, { headers: getHeaders() });
+        const res = await fetch(`${API_BASE}/marks?studentId=${studentId}`, { headers: getHeaders() });
         const data = await res.json();
-        const list = Array.isArray(data) ? data : data.data;
-        document.getElementById('studentMarksHistoryTable').innerHTML = list.map(m => `
-          <tr>
-            <td>${m.subjectId?.name || '-'}</td>
-            <td>${m.examType}</td>
-            <td><b>${m.marksObtained}</b></td>
-            <td>${m.maxMarks}</td>
-            <td>${m.academicYear}</td>
-          </tr>
-        `).join('');
-      } catch (e) { console.error(e); }
+        const list = Array.isArray(data) ? data : (data.data || []);
+
+        document.getElementById('studentMarksHistoryTable').innerHTML = list.map(m => {
+          const percent = ((m.marksObtained / m.maxMarks) * 100).toFixed(1);
+          return `
+            <tr>
+              <td>${m.subjectId?.name || 'Unknown'}</td>
+              <td style="text-transform: capitalize;">${m.examType}</td>
+              <td><b>${m.marksObtained}</b></td>
+              <td>${m.maxMarks}</td>
+              <td style="font-weight: bold; color: ${percent >= 40 ? '#27ae60' : '#e74c3c'}">${percent}%</td>
+              <td>${m.academicYear}</td>
+            </tr>
+          `;
+        }).join('');
+        document.getElementById('student-history-container').style.display = 'block';
+      } catch (e) {
+        console.error(e);
+        alert("Failed to load history");
+      }
     }
 
     // ================= ATTENDANCE LOGIC =================
-    async function loadAttendance() {
-      try {
-        const res = await fetch(`${API_BASE}/attendance`, { headers: getHeaders() });
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : (data.data || []);
-        const tbody = document.getElementById('attendanceTable');
-        tbody.innerHTML = list.map(a => `
-          <tr>
-            <td>${new Date(a.date).toLocaleDateString()}</td>
-            <td>${a.studentId ? a.studentId.name : '-'}</td>
-            <td>${a.classId ? a.classId.name : '-'}</td>
-            <td><span class="badge badge-${a.status === 'present' ? 'success' : a.status === 'absent' ? 'danger' : 'warning'}">${a.status}</span></td>
-            <td>
-              <button class="btn btn-sm" onclick='openAttendanceModal(${JSON.stringify(a).replace(/'/g, "&#39;")})'>Edit</button>
-              <button class="btn btn-sm btn-ghost" onclick="deleteAttendance('${a._id}')" style="background:#e74c3c;color:#fff;">Delete</button>
-            </td>
-          </tr>
-        `).join('');
-      } catch (err) { console.error(err); }
-    }
-
-    async function deleteAttendance(id) {
-      if (!confirm("Delete this record?")) return;
-      await fetch(`${API_BASE}/attendance/${id}`, { method: 'DELETE', headers: getHeaders() });
-      loadAttendance();
-    }
-
-    async function openAttendanceModal(att = null) {
-      const [studentsRes, classesRes] = await Promise.all([
-        fetch(`${API_BASE}/students`, { headers: getHeaders() }),
-        fetch(`${API_BASE}/classes`, { headers: getHeaders() })
-      ]);
-      const students = await studentsRes.json();
-      const classes = await classesRes.json();
-
-      const sList = Array.isArray(students) ? students : (students.data || []);
-      const cList = Array.isArray(classes) ? classes : (classes.data || []);
-
-      const sSelect = document.getElementById('attendanceStudent');
-      const cSelect = document.getElementById('attendanceClass');
-
-      sSelect.innerHTML = '<option value="">Select Student</option>' + sList.map(s => `<option value="${s._id}">${s.name}</option>`).join('');
-      cSelect.innerHTML = '<option value="">Select Class</option>' + cList.map(c => `<option value="${c._id}">${c.name}</option>`).join('');
-
-      const modal = document.getElementById('attendanceModal');
-      document.getElementById('attendanceModalTitle').innerText = att ? 'Edit Attendance' : 'Mark Attendance';
-
-      if (att) {
-        document.getElementById('attendanceId').value = att._id;
-        document.getElementById('attendanceDate').value = att.date ? att.date.split('T')[0] : '';
-        document.getElementById('attendanceStatus').value = att.status;
-        if (att.studentId) sSelect.value = att.studentId._id || att.studentId;
-        if (att.classId) cSelect.value = att.classId._id || att.classId;
-      } else {
-        document.getElementById('attendanceForm').reset();
-        document.getElementById('attendanceId').value = '';
-        document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
-      }
-      modal.style.display = 'flex';
-    }
-
-    function closeAttendanceModal() { document.getElementById('attendanceModal').style.display = 'none'; }
-
-    document.getElementById('attendanceForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const id = document.getElementById('attendanceId').value;
-      const data = {
-        date: document.getElementById('attendanceDate').value,
-        studentId: document.getElementById('attendanceStudent').value,
-        classId: document.getElementById('attendanceClass').value,
-        status: document.getElementById('attendanceStatus').value
-      };
-      const method = id ? 'PUT' : 'POST';
-      const url = id ? `${API_BASE}/attendance/${id}` : `${API_BASE}/attendance`;
-      await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(data) });
-      closeAttendanceModal();
-      loadAttendance();
-    });
-
-    // ================= MARKS LOGIC =================
-    async function loadMarks() {
-      try {
-        const res = await fetch(`${API_BASE}/marks`, { headers: getHeaders() });
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : (data.data || []);
-        const tbody = document.getElementById('marksTable');
-        tbody.innerHTML = list.map(m => `
-          <tr>
-            <td>${m.studentId ? m.studentId.name : '-'}</td>
-            <td>${m.subjectId ? m.subjectId.name : '-'}</td>
-            <td>${m.examType}</td>
-            <td>${m.marksObtained}</td>
-            <td>
-              <button class="btn btn-sm" onclick='openMarksModal(${JSON.stringify(m).replace(/'/g, "&#39;")})'>Edit</button>
-              <button class="btn btn-sm btn-ghost" onclick="deleteMark('${m._id}')" style="background:#e74c3c;color:#fff;">Delete</button>
-            </td>
-          </tr>
-        `).join('');
-      } catch (err) { console.error(err); }
-    }
-
-    async function deleteMark(id) {
-      if (!confirm("Delete this mark?")) return;
-      await fetch(`${API_BASE}/marks/${id}`, { method: 'DELETE', headers: getHeaders() });
-      loadMarks();
-    }
-
-    async function openMarksModal(mark = null) {
-      const [studentsRes, subjectsRes, classesRes] = await Promise.all([
-        fetch(`${API_BASE}/students`, { headers: getHeaders() }),
-        fetch(`${API_BASE}/subjects`, { headers: getHeaders() }),
-        fetch(`${API_BASE}/classes`, { headers: getHeaders() })
-      ]);
-      const students = await studentsRes.json();
-      const subjects = await subjectsRes.json();
-      const classes = await classesRes.json();
-
-      const sList = Array.isArray(students) ? students : (students.data || []);
-      const subList = Array.isArray(subjects) ? subjects : (subjects.data || []);
-      const cList = Array.isArray(classes) ? classes : (classes.data || []);
-
-      const sSelect = document.getElementById('marksStudent');
-      const subSelect = document.getElementById('marksSubject');
-      const cSelect = document.getElementById('marksClass');
-
-      sSelect.innerHTML = '<option value="">Select Student</option>' + sList.map(s => `<option value="${s._id}">${s.name}</option>`).join('');
-      subSelect.innerHTML = '<option value="">Select Subject</option>' + subList.map(s => `<option value="${s._id}">${s.name}</option>`).join('');
-      cSelect.innerHTML = '<option value="">Select Class</option>' + cList.map(c => `<option value="${c._id}">${c.name}</option>`).join('');
-
-      const modal = document.getElementById('marksModal');
-      document.getElementById('marksModalTitle').innerText = mark ? 'Edit Marks' : 'Add Marks';
-
-      if (mark) {
-        document.getElementById('marksId').value = mark._id;
-        document.getElementById('marksExam').value = mark.examType;
-        document.getElementById('marksObtained').value = mark.marksObtained;
-        document.getElementById('marksYear').value = mark.academicYear || '';
-        if (mark.studentId) sSelect.value = mark.studentId._id || mark.studentId;
-        if (mark.subjectId) subSelect.value = mark.subjectId._id || mark.subjectId;
-        if (mark.classId) cSelect.value = mark.classId._id || mark.classId;
-      } else {
-        document.getElementById('marksForm').reset();
-        document.getElementById('marksId').value = '';
-      }
-      modal.style.display = 'flex';
-    }
-
-    function closeMarksModal() { document.getElementById('marksModal').style.display = 'none'; }
-
-    document.getElementById('marksForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const id = document.getElementById('marksId').value;
-      const data = {
-        studentId: document.getElementById('marksStudent').value,
-        subjectId: document.getElementById('marksSubject').value,
-        classId: document.getElementById('marksClass').value,
-        examType: document.getElementById('marksExam').value,
-        marksObtained: document.getElementById('marksObtained').value,
-        academicYear: document.getElementById('marksYear').value
-      };
-      const method = id ? 'PUT' : 'POST';
-      const url = id ? `${API_BASE}/marks/${id}` : `${API_BASE}/marks`;
-      await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(data) });
-      closeMarksModal();
-      loadMarks();
-    });
+    window.onload = init;
 
     window.onload = init;
   </script>
