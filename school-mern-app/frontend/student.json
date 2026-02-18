@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Aarav Kumar",
+    "email": "aarav@student.com",
+    "password": "student123",
+    "role": "student",
+    "attendance": 92,
+    "marks": 88
+  },
+  {
+    "name": "Diya Sharma",
+    "email": "diya@student.com",
+    "password": "student123",
+    "role": "student",
+    "attendance": 95,
+    "marks": 91
+  },
+  {
+    "name": "Rohan Patel",
+    "email": "rohan@student.com",
+    "password": "student123",
+    "role": "student",
+    "attendance": 85,
+    "marks": 76
+  },
+  {
+    "name": "Ananya Singh",
+    "email": "ananya@student.com",
+    "password": "student123",
+    "role": "student",
+    "attendance": 90,
+    "marks": 84
+  },
+  {
+    "name": "Karthik R",
+    "email": "karthik@student.com",
+    "password": "student123",
+    "role": "student",
+    "attendance": 88,
+    "marks": 79
+  }
+]

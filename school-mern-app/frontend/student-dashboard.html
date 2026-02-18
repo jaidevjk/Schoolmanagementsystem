@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard | School Management System</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --surface-hover: #f1f2f4;
+      --border: #e0e0e0;
+      --text: #2c3e50;
+      --text-muted: #7f8c8d;
+      --primary: #2b5dab;
+      --primary-hover: #1f4d91;
+      --success: #2ecc71;
+      --warning: #f1c40f;
+      --danger: #e74c3c;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      --font-sans: 'Outfit', 'DM Sans', system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      display: flex;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* Sidebar - Matching Client */
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #2b5dab 0%, #1f4d91 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-brand {
+      padding: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .sidebar-brand .logo {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+
+    .sidebar-brand span:last-child {
+      font-size: 0.85rem;
+      opacity: 0.95;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem 10px;
+      overflow-y: auto;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.9);
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      transform: translateX(3px);
+    }
+
+    .nav-item.active {
+      background: #fff;
+      color: #2b5dab;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-footer {
+      padding: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-footer .user-info {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    .sidebar-footer .btn-ghost {
+      background: #e74c3c;
+      color: #fff;
+      width: 100%;
+      border: none;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .sidebar-footer .btn-ghost:hover {
+      background: #c0392b;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(43, 93, 171, 0.3);
+    }
+
+    .main-content {
+      flex: 1;
+      margin-left: 250px;
+      padding: 2rem;
+      width: calc(100% - 250px);
+      background: var(--bg);
+    }
+
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .dash-header h2 {
+      font-size: 1.5rem;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .dash-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dash-profile i {
+      font-size: 2.5rem;
+      color: var(--primary);
+    }
+
+    .dash-profile strong {
+      display: block;
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .dash-profile small {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      border: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-card h3 {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card .value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .dash-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+      border: none;
+    }
+
+    .dash-card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th,
+    td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--text-muted);
+      background: #f8f9fa;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+
+    tr:hover td {
+      background: var(--surface-hover);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-info {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .badge-success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .badge-danger {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .badge-warning {
+      background: #fff3cd;
+      color: #856404;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo"><i class="fa-solid fa-school"></i></div>
+      <span>Student Portal</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" onclick="showView('dashboard')" class="nav-item active" id="nav-dashboard">
+        <i class="fa-solid fa-gauge"></i> Dashboard
+      </a>
+      <a href="#" onclick="showView('attendance')" class="nav-item" id="nav-attendance">
+        <i class="fa-solid fa-calendar-check"></i> Attendance
+      </a>
+      <a href="#" onclick="showView('marks')" class="nav-item" id="nav-marks">
+        <i class="fa-solid fa-file-pen"></i> Marks
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <strong id="sidebar-username">Student User</strong>
+        <span class="badge badge-info">Student</span>
+      </div>
+      <button onclick="logout()" class="btn btn-ghost">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="dash-header">
+      <h2 id="page-title">Dashboard</h2>
+      <div class="dash-profile">
+        <i class="fa-solid fa-user-circle"></i>
+        <div>
+          <strong id="header-username">Student User</strong>
+          <small>Class 10-A</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: DASHBOARD -->
+    <div id="view-dashboard" class="view-section">
+      <div class="grid-cards">
+        <div class="stat-card">
+          <h3>Attendance</h3>
+          <div class="value">92%</div>
+        </div>
+        <div class="stat-card">
+          <h3>Average Grade</h3>
+          <div class="value">A</div>
+        </div>
+        <div class="stat-card">
+          <h3>Fees Status</h3>
+          <div class="value" style="color: var(--success); font-size: 1.5rem;">Paid</div>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <h3>My Schedule</h3>
+        <p style="color: #777;">No classes scheduled for today.</p>
+      </div>
+    </div>
+
+    <!-- VIEW: ATTENDANCE -->
+    <div id="view-attendance" class="view-section" style="display: none;">
+      <div class="dash-card">
+        <h3>My Attendance</h3>
+        <div class="dash-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: MARKS -->
+    <div id="view-marks" class="view-section" style="display: none;">
+      <div class="dash-card">
+        <h3>My Marks</h3>
+        <div class="dash-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Exam</th>
+                <th>Marks</th>
+                <th>Total</th>
+                <th>Academic Year</th>
+              </tr>
+            </thead>
+            <tbody id="marksTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const API_BASE = 'http://localhost:5001/api';
+
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'login.html';
+        return null;
+      }
+      return token;
+    }
+
+    function getHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      };
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    function init() {
+      const token = checkAuth();
+      if (!token) return;
+      const userName = localStorage.getItem('name') || 'Student';
+      document.getElementById('sidebar-username').textContent = userName;
+      document.getElementById('header-username').textContent = userName;
+      showView('dashboard');
+    }
+
+    function showView(viewName) {
+      document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+      const viewEl = document.getElementById(`view-${viewName}`);
+      if (viewEl) {
+        viewEl.style.display = 'block';
+        document.getElementById(`nav-${viewName}`).classList.add('active');
+        document.getElementById('page-title').innerText = viewName.charAt(0).toUpperCase() + viewName.slice(1);
+
+        if (viewName === 'attendance') loadMyAttendance();
+        if (viewName === 'marks') loadMyMarks();
+      }
+    }
+
+    async function loadMyAttendance() {
+      const userId = localStorage.getItem('userId');
+      if (!userId) return;
+      try {
+        const res = await fetch(`${API_BASE}/attendance?studentId=${userId}`, { headers: getHeaders() });
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.data || []);
+        document.getElementById('attendanceTable').innerHTML = list.map(a => `
+          <tr>
+            <td>${new Date(a.date).toLocaleDateString()}</td>
+            <td><span class="badge badge-${a.status === 'present' ? 'success' : a.status === 'absent' ? 'danger' : 'warning'}">${a.status}</span></td>
+          </tr>
+        `).join('') || '<tr><td colspan="2">No records found</td></tr>';
+      } catch (e) { console.error(e); }
+    }
+
+    async function loadMyMarks() {
+      const userId = localStorage.getItem('userId');
+      if (!userId) return;
+      try {
+        const res = await fetch(`${API_BASE}/marks?studentId=${userId}`, { headers: getHeaders() });
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.data || []);
+        document.getElementById('marksTable').innerHTML = list.map(m => `
+          <tr>
+            <td>${m.subjectId ? m.subjectId.name : '-'}</td>
+            <td>${m.examType}</td>
+            <td><b>${m.marksObtained}</b></td>
+            <td>${m.maxMarks}</td>
+            <td>${m.academicYear}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="5">No marks records found</td></tr>';
+      } catch (e) { console.error(e); }
+    }
+
+    window.onload = init;
+  </script>
+</body>
+
+</html>

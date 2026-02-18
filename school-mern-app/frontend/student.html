@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Students Management</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f0f4f8; }
+        h1 { text-align: center; color: #2c3e50; }
+        form, table { margin: 20px auto; width: 80%; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 5px 10px rgba(0,0,0,0.1);}
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        button { padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; margin:2px;}
+        .delete-btn { background: #e74c3c; color: #fff; }
+        .edit-btn { background: #3498db; color: #fff; }
+        .save-btn { background: #2ecc71; color: #fff; }
+    </style>
+</head>
+<body>
+
+<h1>Students Management</h1>
+
+<form id="studentForm">
+    <select id="userSelect" required>
+        <option value="">Select User</option>
+    </select>
+    <input type="text" id="class" placeholder="Class" required>
+    <input type="text" id="section" placeholder="Section" required>
+    <button type="submit">Add Student</button>
+</form>
+
+<table id="studentTable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Class</th>
+            <th>Section</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+const API_URL = "http://localhost:5000/api/students";
+const USER_API = "http://localhost:5000/api/users";
+const tableBody = document.querySelector("#studentTable tbody");
+const userSelect = document.getElementById("userSelect");
+
+// Load users into dropdown
+async function loadUsers() {
+    const res = await fetch(USER_API);
+    const users = await res.json();
+    userSelect.innerHTML = '<option value="">Select User</option>';
+    users.forEach(u => {
+        userSelect.innerHTML += `<option value="${u._id}">${u.name} (${u.email})</option>`;
+    });
+}
+
+// Load students
+async function loadStudents() {
+    const res = await fetch(API_URL);
+    const students = await res.json();
+    tableBody.innerHTML = "";
+    students.forEach(s => {
+        tableBody.innerHTML += `
+            <tr id="row-${s._id}">
+                <td>${s.userId?.name || ""}</td>
+                <td id="class-${s._id}">${s.class}</td>
+                <td id="section-${s._id}">${s.section}</td>
+                <td>
+                    <button class="edit-btn" onclick="editStudent('${s._id}')">Edit</button>
+                    <button class="delete-btn" onclick="deleteStudent('${s._id}')">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+// Add student
+document.getElementById("studentForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const data = {
+        userId: userSelect.value,
+        class: document.getElementById("class").value,
+        section: document.getElementById("section").value
+    };
+    await fetch(API_URL, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(data)});
+    alert("Student added!");
+    loadStudents();
+});
+
+// Delete student
+async function deleteStudent(id) {
+    await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    alert("Student deleted!");
+    loadStudents();
+}
+
+// Edit student
+function editStudent(id) {
+    const classCell = document.getElementById(`class-${id}`);
+    const sectionCell = document.getElementById(`section-${id}`);
+    const oldClass = classCell.innerText;
+    const oldSection = sectionCell.innerText;
+
+    classCell.innerHTML = `<input type="text" id="edit-class-${id}" value="${oldClass}">`;
+    sectionCell.innerHTML = `<input type="text" id="edit-section-${id}" value="${oldSection}">`;
+
+    const actionsCell = classCell.parentElement.querySelector("td:last-child");
+    actionsCell.innerHTML = `<button class="save-btn" onclick="saveStudent('${id}')">Save</button>`;
+}
+
+// Save student
+async function saveStudent(id) {
+    const newClass = document.getElementById(`edit-class-${id}`).value;
+    const newSection = document.getElementById(`edit-section-${id}`).value;
+    await fetch(`${API_URL}/${id}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ class: newClass, section: newSection }) });
+    alert("Student updated!");
+    loadStudents();
+}
+
+loadUsers();
+loadStudents();
+</script>
+
+</body>
+</html>
