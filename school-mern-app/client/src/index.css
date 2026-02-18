@@ -414,6 +414,29 @@ tr:hover td {
   color: #555;
 }
 
+.activity-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f2f5;
+  color: #2b5dab;
+}
+
 .dash-table-wrap {
   overflow-x: auto;
   margin-top: 15px;
