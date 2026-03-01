@@ -1,0 +1,20 @@
+[
+  {"studentEmail":"student1@example.com","subject":"Math","marks":85},
+  {"studentEmail":"student1@example.com","subject":"Science","marks":90},
+  {"studentEmail":"student1@example.com","subject":"English","marks":78},
+  {"studentEmail":"student1@example.com","subject":"History","marks":82},
+  {"studentEmail":"student1@example.com","subject":"Geography","marks":88},
+
+  {"studentEmail":"student2@example.com","subject":"Math","marks":70},
+  {"studentEmail":"student2@example.com","subject":"Science","marks":75},
+  {"studentEmail":"student2@example.com","subject":"English","marks":80},
+  {"studentEmail":"student2@example.com","subject":"History","marks":65},
+  {"studentEmail":"student2@example.com","subject":"Geography","marks":72},
+
+  {"studentEmail":"student3@example.com","subject":"Math","marks":90},
+  {"studentEmail":"student3@example.com","subject":"Science","marks":85},
+  {"studentEmail":"student3@example.com","subject":"English","marks":88},
+  {"studentEmail":"student3@example.com","subject":"History","marks":92},
+  {"studentEmail":"student3@example.com","subject":"Geography","marks":87}
+
+]

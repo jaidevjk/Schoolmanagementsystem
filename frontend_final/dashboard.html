@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>School Management Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body class="bg-gray-100">
+
+  <header class="bg-blue-500 text-white p-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">School Dashboard</h1>
+    <button id="logoutBtn" class="bg-red-500 px-3 py-1 rounded hover:bg-red-600">Logout</button>
+  </header>
+
+  <main class="p-6">
+
+    <!-- Students Table -->
+    <section class="mb-8">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-lg font-bold">Students</h2>
+        <button id="addStudentBtn" class="bg-green-500 px-3 py-1 rounded text-white hover:bg-green-600">Add Student</button>
+      </div>
+      <table class="w-full border border-gray-300">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border px-2 py-1">Name</th>
+            <th class="border px-2 py-1">Email</th>
+            <th class="border px-2 py-1">Class</th>
+            <th class="border px-2 py-1">Section</th>
+            <th class="border px-2 py-1">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentsTable"></tbody>
+      </table>
+    </section>
+
+    <!-- Teachers Table -->
+    <section class="mb-8">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-lg font-bold">Teachers</h2>
+        <button id="addTeacherBtn" class="bg-green-500 px-3 py-1 rounded text-white hover:bg-green-600">Add Teacher</button>
+      </div>
+      <table class="w-full border border-gray-300">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border px-2 py-1">Name</th>
+            <th class="border px-2 py-1">Email</th>
+            <th class="border px-2 py-1">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="teachersTable"></tbody>
+      </table>
+    </section>
+
+    <!-- Attendance Table -->
+    <section class="mb-8">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-lg font-bold">Attendance</h2>
+        <button id="addAttendanceBtn" class="bg-green-500 px-3 py-1 rounded text-white hover:bg-green-600">Add Attendance</button>
+      </div>
+      <table class="w-full border border-gray-300">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border px-2 py-1">Student</th>
+            <th class="border px-2 py-1">Date</th>
+            <th class="border px-2 py-1">Status</th>
+            <th class="border px-2 py-1">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="attendanceTable"></tbody>
+      </table>
+    </section>
+
+    <!-- Marks Table -->
+    <section class="mb-8">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-lg font-bold">Marks</h2>
+        <button id="addMarksBtn" class="bg-green-500 px-3 py-1 rounded text-white hover:bg-green-600">Add Marks</button>
+      </div>
+      <table class="w-full border border-gray-300">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border px-2 py-1">Student</th>
+            <th class="border px-2 py-1">Subject</th>
+            <th class="border px-2 py-1">Marks</th>
+            <th class="border px-2 py-1">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="marksTable"></tbody>
+      </table>
+    </section>
+    <!-- Charts Section -->
+<section class="mb-8">
+  <h2 class="text-lg font-bold mb-2">Charts</h2>
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <canvas id="attendanceChart"></canvas>
+    </div>
+    <div>
+      <canvas id="marksChart"></canvas>
+    </div>
+  </div>
+</section>
+
+
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

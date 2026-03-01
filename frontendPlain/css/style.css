@@ -1,0 +1,156 @@
+:root {
+    --bg: #f4f6f9;
+    --sidebar-start: #2b5dab;
+    --sidebar-end: #1f4d91;
+    --text: #111;
+    --muted: #666;
+    --card: #fff;
+    --primary: #3498db;
+}
+
+* {
+    box-sizing: border-box
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0
+}
+
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh
+}
+
+.sidebar {
+    width: 250px;
+    background: linear-gradient(180deg, var(--sidebar-start), var(--sidebar-end));
+    color: #fff;
+    display: flex;
+    flex-direction: column
+}
+
+.sidebar-brand {
+    padding: 20px;
+    text-align: center
+}
+
+.sidebar-brand .logo {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 8px
+}
+
+.sidebar-nav {
+    padding: 10px 0;
+    flex: 1
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    margin: 0 10px 8px 0;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.95);
+    text-decoration: none
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.08)
+}
+
+.nav-item.active {
+    background: #fff;
+    color: var(--sidebar-start);
+    font-weight: 700
+}
+
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12)
+}
+
+.main-content {
+    flex: 1;
+    padding: 24px;
+    overflow: auto
+}
+
+.dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px
+}
+
+.dash-card {
+    background: var(--card);
+    padding: 18px;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06)
+}
+
+.dash-table-wrap {
+    margin-top: 12px
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse
+}
+
+th,
+td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left
+}
+
+.badge {
+    background: #eef6ff;
+    color: var(--sidebar-start);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600
+}
+
+.btn {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer
+}
+
+.btn-ghost {
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.12)
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #fff
+}
+
+.form-inline {
+    display: flex;
+    gap: 8px;
+    align-items: center
+}
+
+@media(max-width:900px) {
+    .sidebar {
+        display: none
+    }
+
+    .main-content {
+        padding: 12px
+    }
+}

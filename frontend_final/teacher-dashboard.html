@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Dashboard | School Management System</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --surface-hover: #f1f2f4;
+      --border: #e0e0e0;
+      --text: #2c3e50;
+      --text-muted: #7f8c8d;
+      --primary: #2b5dab;
+      --primary-hover: #1f4d91;
+      --success: #2ecc71;
+      --warning: #f1c40f;
+      --danger: #e74c3c;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      --font-sans: 'Outfit', 'DM Sans', system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      display: flex;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* Sidebar - Matching Client */
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #2b5dab 0%, #1f4d91 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-brand {
+      padding: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .sidebar-brand .logo {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+
+    .sidebar-brand span:last-child {
+      font-size: 0.85rem;
+      opacity: 0.95;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem 10px;
+      overflow-y: auto;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.9);
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      transform: translateX(3px);
+    }
+
+    .nav-item.active {
+      background: #fff;
+      color: #2b5dab;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-footer {
+      padding: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-footer .user-info {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    .sidebar-footer .btn-ghost {
+      background: #e74c3c;
+      color: #fff;
+      width: 100%;
+      border: none;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .sidebar-footer .btn-ghost:hover {
+      background: #c0392b;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(43, 93, 171, 0.3);
+    }
+
+    .main-content {
+      flex: 1;
+      margin-left: 250px;
+      padding: 2rem;
+      width: calc(100% - 250px);
+      background: var(--bg);
+    }
+
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .dash-header h2 {
+      font-size: 1.5rem;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .dash-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dash-profile i {
+      font-size: 2.5rem;
+      color: var(--primary);
+    }
+
+    .dash-profile strong {
+      display: block;
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .dash-profile small {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      border: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-card h3 {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-card .value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .activity-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f2f5;
+      color: var(--primary);
+    }
+
+    .dash-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+      border: none;
+    }
+
+    .dash-card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th,
+    td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--text-muted);
+      background: #f8f9fa;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+
+    tr:hover td {
+      background: var(--surface-hover);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-info {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    /* Exact Replication Styles */
+    .stat-card-pill {
+      flex: 1;
+      min-width: 120px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 10px 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .status-pill {
+      border: 1px solid #ddd;
+      padding: 6px 0;
+      width: 32px;
+      height: 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 11px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.1s ease-in-out;
+      background: #fff;
+      color: #666;
+    }
+
+    .status-pill.active-p {
+      background: #27ae60 !important;
+      color: #fff !important;
+      border-color: #27ae60 !important;
+    }
+
+    .status-pill.active-a {
+      background: #e74c3c !important;
+      color: #fff !important;
+      border-color: #e74c3c !important;
+    }
+
+    .status-pill.active-l {
+      background: #f39c12 !important;
+      color: #fff !important;
+      border-color: #f39c12 !important;
+    }
+
+    .status-pill.active-lv {
+      background: #3498db !important;
+      color: #fff !important;
+      border-color: #3498db !important;
+    }
+
+    /* Sticky Columns for Matrix */
+    .sticky-col-roll {
+      position: sticky;
+      left: 0;
+      background: #f8f9fa;
+      z-index: 11;
+      width: 80px;
+    }
+
+    .sticky-col-name {
+      position: sticky;
+      left: 80px;
+      background: #f8f9fa;
+      z-index: 11;
+      width: 150px;
+    }
+
+    .sticky-cell-roll {
+      position: sticky;
+      left: 0;
+      background: #f8f9fa;
+      z-index: 9;
+      font-weight: bold;
+    }
+
+    .sticky-cell-name {
+      position: sticky;
+      left: 80px;
+      background: #f8f9fa;
+      z-index: 9;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo"><i class="fa-solid fa-school"></i></div>
+      <span>Teacher Portal</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" onclick="showView('dashboard')" class="nav-item active" id="nav-dashboard">
+        <i class="fa-solid fa-gauge"></i> Dashboard
+      </a>
+      <a href="#" onclick="showView('attendance')" class="nav-item" id="nav-attendance">
+        <i class="fa-solid fa-calendar-check"></i> Attendance
+      </a>
+      <a href="#" onclick="showView('marks')" class="nav-item" id="nav-marks">
+        <i class="fa-solid fa-file-pen"></i> Marks
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <strong id="sidebar-username">Teacher User</strong>
+        <span class="badge badge-info">Teacher</span>
+      </div>
+      <button onclick="logout()" class="btn btn-ghost">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="dash-header">
+      <h2 id="page-title">Dashboard</h2>
+      <div class="dash-profile">
+        <i class="fa-solid fa-user-circle"></i>
+        <div>
+          <strong id="header-username">Teacher User</strong>
+          <small>Faculty Member</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: DASHBOARD -->
+    <div id="view-dashboard" class="view-section">
+      <div class="dash-card">
+        <h3>Teacher Dashboard</h3>
+        <p style="color: #666; margin-bottom: 20px;">Manage classes, attendance, assignments, grades and messages.</p>
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #eee;">
+          <p style="margin-bottom: 10px;"><strong>Employee ID:</strong> <span id="prof-emp-id">-</span></p>
+          <p style="margin-bottom: 10px;"><strong>Email:</strong> <span id="prof-email">-</span></p>
+          <p style="margin-bottom: 10px;"><strong>Qualification:</strong> <span id="prof-qual">-</span></p>
+          <p style="margin-bottom: 0;"><strong>Classes:</strong> <span id="prof-classes">-</span></p>
+        </div>
+      </div>
+
+      <div class="grid-cards" style="margin-top: 2rem;">
+        <div class="stat-card">
+          <h3>My Classes</h3>
+          <div class="value" id="stat-classes">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Total Students</h3>
+          <div class="value" id="stat-students">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Pending Marks</h3>
+          <div class="value" id="stat-pending">0</div>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <h3>Recent Activity</h3>
+        <div id="recent-activity-list">
+          <p style="color: #777;">No recent activity.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: ATTENDANCE -->
+    <div id="view-attendance" class="view-section" style="display: none;">
+      <div class="dash-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3>Attendance Management</h3>
+          <div style="display: flex; gap: 5px; background: #f0f2f5; padding: 4px; border-radius: 8px;">
+            <button onclick="setAttendanceSubView('take')" id="btn-att-take" class="btn btn-sm"
+              style="background:#fff; font-weight:bold;">Take Attendance</button>
+            <button onclick="setAttendanceSubView('history')" id="btn-att-history" class="btn btn-sm">History</button>
+          </div>
+        </div>
+
+        <!-- Take Attendance Sub-View -->
+        <div id="att-sub-take">
+          <div
+            style="display: flex; gap: 15px; margin-bottom: 20px; align-items: end; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+            <div style="flex: 1; min-width: 200px;">
+              <label style="display:block; font-size:12px; margin-bottom:4px; font-weight:bold;">Select Class</label>
+              <select id="att-class-select" class="form-control"
+                style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;"></select>
+            </div>
+            <div style="flex: 1; min-width: 150px;">
+              <label style="display:block; font-size:12px; margin-bottom:4px; font-weight:bold;">Date</label>
+              <input type="date" id="att-date-input" class="form-control"
+                style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+            </div>
+            <button onclick="fetchBulkAttendance()" class="btn btn-primary">Get Students</button>
+          </div>
+
+          <div id="bulk-att-container" style="display: none;">
+            <!-- Stats Dashboard -->
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+              <div class="stat-card-pill" style="border-left: 5px solid #34495e;">
+                <div style="font-size: 24px; font-weight: bold; color: #34495e;" id="att-stat-total">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase;">Total Students</div>
+              </div>
+              <div class="stat-card-pill" style="border-left: 5px solid #27ae60;">
+                <div style="font-size: 24px; font-weight: bold; color: #27ae60;" id="att-stat-present">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase;">Present</div>
+              </div>
+              <div class="stat-card-pill" style="border-left: 5px solid #e74c3c;">
+                <div style="font-size: 24px; font-weight: bold; color: #e74c3c;" id="att-stat-absent">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase;">Absent</div>
+              </div>
+              <div class="stat-card-pill" style="border-left: 5px solid #f39c12;">
+                <div style="font-size: 24px; font-weight: bold; color: #f39c12;" id="att-stat-late">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase;">Late</div>
+              </div>
+              <div class="stat-card-pill" style="border-left: 5px solid #3498db;">
+                <div style="font-size: 24px; font-weight: bold; color: #3498db;" id="att-stat-leave">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase;">Leave</div>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <div>
+                <button onclick="markAllAttendance('present')"
+                  style="background:transparent; border:1px solid #27ae60; color:#27ae60; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px; margin-right:8px;">Mark
+                  All Present</button>
+                <button onclick="markAllAttendance('absent')"
+                  style="background:transparent; border:1px solid #e74c3c; color:#e74c3c; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px;">Mark
+                  All Absent</button>
+              </div>
+              <button onclick="saveBulkAttendance()" class="btn btn-primary">Save Attendance</button>
+            </div>
+
+            <div class="dash-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Roll No</th>
+                    <th>Student Name</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                  </tr>
+                </thead>
+                <tbody id="bulkAttendanceTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- History Sub-View -->
+        <div id="att-sub-history" style="display: none;">
+          <div
+            style="display: flex; gap: 15px; margin-bottom: 20px; align-items: end; background: #fff; padding: 20px; border: 1px solid #eee; border-radius: 8px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 150px;">
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #666;">Start
+                Date</label>
+              <input type="date" id="att-hist-start"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+            </div>
+            <div style="flex: 1; min-width: 150px;">
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #666;">End
+                Date</label>
+              <input type="date" id="att-hist-end"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+            </div>
+            <div style="flex: 1; min-width: 180px;">
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #666;">Filter by
+                Student</label>
+              <select id="att-hist-student" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                <option value="">-- All Students --</option>
+              </select>
+            </div>
+            <button onclick="loadAttendanceHistory()" class="btn btn-primary" style="height: 42px;">Search
+              Records</button>
+          </div>
+          <div class="dash-table-wrap"
+            style="box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; background: #fff;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <thead style="background: #f8f9fa;">
+                <tr>
+                  <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #eee;">Date</th>
+                  <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #eee;">Student</th>
+                  <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #eee;">Status</th>
+                  <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #eee;">Remarks</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceHistoryTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: MARKS -->
+    <div id="view-marks" class="view-section" style="display: none;">
+      <div class="dash-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3>Marks Management</h3>
+          <div style="display: flex; gap: 5px; background: #f0f2f5; padding: 4px; border-radius: 8px;">
+            <button onclick="setMarksSubView('enter')" id="btn-marks-enter" class="btn btn-sm"
+              style="background:#fff; font-weight:bold;">Enter Marks</button>
+            <button onclick="setMarksSubView('results')" id="btn-marks-results" class="btn btn-sm">Class
+              Results</button>
+            <button onclick="setMarksSubView('history')" id="btn-marks-history" class="btn btn-sm">Student
+              History</button>
+          </div>
+        </div>
+
+        <!-- Enter Marks Sub-View (Bulk) -->
+        <div id="marks-sub-enter">
+          <div
+            style="display: flex; gap: 15px; margin-bottom: 20px; align-items: end; flex-wrap: wrap; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #eee;">
+            <div style="flex: 1; min-width: 150px;">
+              <label
+                style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Class</label>
+              <select id="marks-class-select" class="form-control"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"></select>
+            </div>
+            <div style="flex: 1; min-width: 150px;">
+              <label
+                style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Subject</label>
+              <select id="marks-subject-select" class="form-control"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"></select>
+            </div>
+            <div style="flex: 1; min-width: 120px;">
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Exam
+                Type</label>
+              <select id="marks-exam-select" class="form-control"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                <option value="midterm">Midterm</option>
+                <option value="final">Final</option>
+                <option value="quiz">Quiz</option>
+                <option value="assignment">Assignment</option>
+              </select>
+            </div>
+            <div style="flex: 0.5; min-width: 80px;">
+              <label
+                style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Year</label>
+              <input type="text" id="marks-year-input" class="form-control" value="2025"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+            </div>
+            <button onclick="fetchBulkStudentsForMarks()" class="btn btn-primary" style="height: 42px;">Get Student
+              List</button>
+          </div>
+
+          <div id="bulk-marks-container" style="display: none;">
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+              <div class="stat-card-pill" style="border-left: 4px solid #3498db;">
+                <div style="font-size: 20px; font-weight: bold; color: #2c3e50;" id="marks-stat-avg">0%</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase; margin-top: 4px;">Class Average
+                </div>
+              </div>
+              <div class="stat-card-pill" style="border-left: 4px solid #27ae60;">
+                <div style="font-size: 20px; font-weight: bold; color: #2c3e50;" id="marks-stat-high">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase; margin-top: 4px;">Highest</div>
+              </div>
+              <div class="stat-card-pill" style="border-left: 4px solid #e74c3c;">
+                <div style="font-size: 20px; font-weight: bold; color: #2c3e50;" id="marks-stat-low">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase; margin-top: 4px;">Lowest</div>
+              </div>
+              <div class="stat-card-pill" style="border-left: 4px solid #8e44ad;">
+                <div style="font-size: 20px; font-weight: bold; color: #2c3e50;" id="marks-stat-count">0</div>
+                <div style="font-size: 11px; color: #7f8c8d; text-transform: uppercase; margin-top: 4px;">Papers Graded
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+              <button onclick="saveBulkMarks()" class="btn"
+                style="background: #27ae60; color: white; padding: 10px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Save
+                All Marks</button>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+              <button onclick="saveBulkMarks()" class="btn btn-success" style="background:#2ecc71; color:#fff;">Save All
+                Marks</button>
+            </div>
+
+            <div class="dash-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Roll No</th>
+                    <th>Student Name</th>
+                    <th>Marks Obtained</th>
+                    <th>Max Marks</th>
+                    <th>%</th>
+                  </tr>
+                </thead>
+                <tbody id="bulkMarksTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Class Results Sub-View -->
+        <div id="marks-sub-results" style="display: none;">
+          <div
+            style="display: flex; gap: 15px; margin-bottom: 20px; align-items: end; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #eee; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 180px;">
+              <label
+                style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Class</label>
+              <select id="results-class-select" class="form-control"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"></select>
+            </div>
+            <div style="flex: 1; min-width: 150px;">
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Exam
+                Type</label>
+              <select id="results-exam-select" class="form-control"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                <option value="midterm" selected>Midterm</option>
+                <option value="final">Final</option>
+                <option value="quiz">Quiz</option>
+                <option value="assignment">Assignment</option>
+              </select>
+            </div>
+            <div style="flex: 0.5; min-width: 80px;">
+              <label
+                style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Year</label>
+              <input type="text" id="results-year-input" value="2025"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+            </div>
+            <button onclick="fetchClassResults()" class="btn btn-primary" style="height: 42px;">Get Class
+              Results</button>
+          </div>
+          <div id="results-matrix-container"
+            style="display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 8px; overflow: auto; background: #fff;">
+            <table style="width:100%; border-collapse: collapse; min-width: 800px;">
+              <thead style="background: #f8f9fa;">
+                <tr id="results-matrix-head"></tr>
+              </thead>
+              <tbody id="results-matrix-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Student History Sub-View -->
+        <div id="marks-sub-history" style="display: none;">
+          <div
+            style="display: flex; gap: 15px; margin-bottom: 20px; align-items: end; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #eee; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Select
+                Class</label>
+              <select id="history-class-select" class="form-control" onchange="loadHistoryStudents(this.value)"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"></select>
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+              <label style="display:block; font-size:12px; margin-bottom:6px; font-weight:bold; color: #555;">Select
+                Student</label>
+              <select id="history-student-select" class="form-control"
+                style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                <option value="">-- Select Student --</option>
+              </select>
+            </div>
+            <button onclick="fetchStudentMarksHistory()" class="btn btn-primary" style="height: 42px;">Get
+              History</button>
+          </div>
+          <div id="student-history-container"
+            style="display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; background: #fff;">
+            <table style="width:100%; border-collapse: collapse;">
+              <thead style="background: #f8f9fa;">
+                <tr>
+                  <th style="padding: 15px; text-align: left; border-bottom: 2px solid #eee;">Subject</th>
+                  <th style="padding: 15px; text-align: left; border-bottom: 2px solid #eee;">Exam Type</th>
+                  <th style="padding: 15px; text-align: left; border-bottom: 2px solid #eee;">Marks</th>
+                  <th style="padding: 15px; text-align: left; border-bottom: 2px solid #eee;">Max Marks</th>
+                  <th style="padding: 15px; text-align: left; border-bottom: 2px solid #eee;">%</th>
+                  <th style="padding: 15px; text-align: left; border-bottom: 2px solid #eee;">Academic Year</th>
+                </tr>
+              </thead>
+              <tbody id="studentMarksHistoryTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Attendance Modal -->
+  <div id="attendanceModal" class="modal-overlay"
+    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="modal" style="background: #fff; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px;">
+      <h2 id="attendanceModalTitle" style="margin-bottom: 15px;">Mark Attendance</h2>
+      <form id="attendanceForm">
+        <input type="hidden" id="attendanceId">
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px;">Date *</label>
+          <input type="date" id="attendanceDate" required
+            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px;">Student *</label>
+          <select id="attendanceStudent" required
+            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></select>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px;">Class *</label>
+          <select id="attendanceClass" required
+            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></select>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px;">Status *</label>
+          <select id="attendanceStatus" required
+            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+            <option value="leave">Leave</option>
+          </select>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" onclick="closeAttendanceModal()" class="btn btn-ghost"
+            style="width: auto;">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Marks Modal -->
+  <div id="marksModal" class="modal-overlay"
+    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="modal" style="background: #fff; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px;">
+      <h2 id="marksModalTitle" style="margin-bottom: 15px;">Add Marks</h2>
+      <form id="marksForm">
+        <input type="hidden" id="marksId">
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px;">Student *</label>
+          <select id="marksStudent" required
+            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></select>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px;">Subject *</label>
+          <select id="marksSubject" required
+            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></select>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px;">Class *</label>
+          <select id="marksClass" required
+            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></select>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px;">Exam Type *</label>
+          <select id="marksExam" required
+            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <option value="midterm">Midterm</option>
+            <option value="final">Final</option>
+            <option value="quiz">Quiz</option>
+            <option value="assignment">Assignment</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px;">Marks Obtained *</label>
+          <input type="number" id="marksObtained" required
+            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 5px;">Academic Year</label>
+          <input type="text" id="marksYear" placeholder="2024-2025"
+            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" onclick="closeMarksModal()" class="btn btn-ghost" style="width: auto;">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:5001/api';
+
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'login.html';
+        return null;
+      }
+      return token;
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    function getHeaders() {
+      const token = localStorage.getItem('token');
+      return {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+    }
+
+    function init() {
+      const token = checkAuth();
+      if (!token) return;
+      const userName = localStorage.getItem('name') || 'Teacher';
+      document.getElementById('sidebar-username').textContent = userName;
+      document.getElementById('header-username').textContent = userName;
+      loadTeacherStats();
+      showView('dashboard');
+    }
+
+    async function loadTeacherStats() {
+      try {
+        const [cRes, sRes, mRes, aRes, uRes] = await Promise.all([
+          fetch(`${API_BASE}/classes`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/students`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/marks`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/attendance`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/auth/me`, { headers: getHeaders() })
+        ]);
+
+        const classes = await cRes.json();
+        const students = await sRes.json();
+        const marks = await mRes.json();
+        const attendance = await aRes.json();
+        const userProfile = await uRes.json();
+
+        const cList = Array.isArray(classes) ? classes : (classes.data || []);
+        const sList = Array.isArray(students) ? students : (students.data || []);
+        const mList = Array.isArray(marks) ? marks : (marks.data || []);
+        const aList = Array.isArray(attendance) ? attendance : (attendance.data || []);
+
+        // Stats UI elements
+        document.getElementById('stat-classes').innerText = cList.length;
+        document.getElementById('stat-students').innerText = sList.length;
+
+        // Profile Details
+        const prof = userProfile.teacherProfile || {};
+        document.getElementById('prof-emp-id').innerText = prof.employeeId || '-';
+        document.getElementById('prof-email').innerText = userProfile.email || '-';
+        document.getElementById('prof-qual').innerText = prof.qualification || '-';
+        document.getElementById('prof-classes').innerText = prof.classIds ? prof.classIds.map(c => c.name).join(', ') : '-';
+
+        // "Pending Marks" Calculation
+        const subRes = await fetch(`${API_BASE}/subjects`, { headers: getHeaders() });
+        const subs = await subRes.json();
+        const subList = Array.isArray(subs) ? subs : (subs.data || []);
+        document.getElementById('stat-pending').innerText = Math.max(0, subList.length - mList.length);
+
+        // Populate dropdowns globally
+        const classOptions = cList.map(c => `<option value="${c._id}">${c.name}</option>`).join('');
+        document.getElementById('att-class-select').innerHTML = '<option value="">-- Class --</option>' + classOptions;
+        document.getElementById('marks-class-select').innerHTML = '<option value="">-- Class --</option>' + classOptions;
+        document.getElementById('results-class-select').innerHTML = '<option value="">-- Class --</option>' + classOptions;
+        document.getElementById('history-class-select').innerHTML = '<option value="">-- Select Class --</option>' + classOptions;
+
+        const studentOptions = sList.map(s => `<option value="${s._id}">${s.name}</option>`).join('');
+        document.getElementById('history-student-select').innerHTML = '<option value="">-- Select Student --</option>' + studentOptions;
+
+        const subOptions = subList.map(s => `<option value="${s._id}">${s.name}</option>`).join('');
+        document.getElementById('marks-subject-select').innerHTML = '<option value="">-- Subject --</option>' + subOptions;
+
+        // Recent Activity Simulation
+        const activityList = document.getElementById('recent-activity-list');
+        const activities = [];
+
+        // Add most recent attendance
+        if (aList.length > 0) {
+          const lastA = aList[0];
+          activities.push({
+            icon: 'fa-calendar-check',
+            text: `Attendance marked for <b>${lastA.classId?.name || 'Class'}</b>`,
+            time: new Date(lastA.date).toLocaleDateString()
+          });
+        }
+
+        // Add most recent marks
+        if (mList.length > 0) {
+          const lastM = mList[0];
+          activities.push({
+            icon: 'fa-file-pen',
+            text: `Marks entered for <b>${lastM.studentId?.name || 'Student'}</b> (${lastM.subjectId?.name || 'Subject'})`,
+            time: 'Recently'
+          });
+        }
+
+        if (activities.length > 0) {
+          activityList.innerHTML = activities.map(act => `
+            <div class="activity-item">
+              <div class="activity-icon"><i class="fa-solid ${act.icon}"></i></div>
+              <div style="flex:1;">
+                <p style="font-size:0.9rem; color:var(--text);">${act.text}</p>
+                <small style="color:var(--text-muted); font-size:0.75rem;">${act.time}</small>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          activityList.innerHTML = '<p style="color: #777; font-size:0.9rem;">No recent activity.</p>';
+        }
+
+      } catch (e) { console.error(e); }
+    }
+
+    // --- Sub-View Switchers ---
+    function setAttendanceSubView(view) {
+      document.getElementById('att-sub-take').style.display = view === 'take' ? 'block' : 'none';
+      document.getElementById('att-sub-history').style.display = view === 'history' ? 'block' : 'none';
+      document.getElementById('btn-att-take').style.background = view === 'take' ? '#fff' : 'transparent';
+      document.getElementById('btn-att-take').style.fontWeight = view === 'take' ? 'bold' : 'normal';
+      document.getElementById('btn-att-history').style.background = view === 'history' ? '#fff' : 'transparent';
+      document.getElementById('btn-att-history').style.fontWeight = view === 'history' ? 'bold' : 'normal';
+      if (view === 'history') loadAttendanceHistory();
+    }
+
+    function setMarksSubView(view) {
+      document.getElementById('marks-sub-enter').style.display = view === 'enter' ? 'block' : 'none';
+      document.getElementById('marks-sub-results').style.display = view === 'results' ? 'block' : 'none';
+      document.getElementById('marks-sub-history').style.display = view === 'history' ? 'block' : 'none';
+
+      ['enter', 'results', 'history'].forEach(v => {
+        const btn = document.getElementById(`btn-marks-${v}`);
+        btn.style.background = view === v ? '#fff' : 'transparent';
+        btn.style.fontWeight = view === v ? 'bold' : 'normal';
+      });
+    }
+
+    function showView(viewName) {
+      document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+      const viewEl = document.getElementById(`view-${viewName}`);
+      if (viewEl) {
+        viewEl.style.display = 'block';
+        document.getElementById(`nav-${viewName}`).classList.add('active');
+        document.getElementById('page-title').innerText = viewName.charAt(0).toUpperCase() + viewName.slice(1);
+
+        if (viewName === 'attendance') setAttendanceSubView('take');
+        if (viewName === 'marks') setMarksSubView('enter');
+      }
+    }
+
+    // ================= ATTENDANCE LOGIC (Bulk & History) =================
+    let currentBulkAttendance = [];
+
+    async function fetchBulkAttendance() {
+      const classId = document.getElementById('att-class-select').value;
+      const date = document.getElementById('att-date-input').value;
+      if (!classId || !date) return alert("Select Class and Date");
+
+      try {
+        const [sRes, aRes] = await Promise.all([
+          fetch(`${API_BASE}/students?classId=${classId}&status=active`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/attendance?classId=${classId}&date=${date}`, { headers: getHeaders() })
+        ]);
+        const students = await sRes.json();
+        const attendance = await aRes.json();
+        const sList = Array.isArray(students) ? students : (students.data || []);
+        const aList = Array.isArray(attendance) ? attendance : (attendance.data || []);
+
+        currentBulkAttendance = sList.map(s => {
+          const record = aList.find(r => r.studentId?._id === s._id);
+          return {
+            studentId: s._id,
+            name: s.name,
+            roll: s.rollNumber,
+            status: record ? record.status : 'present',
+            remarks: record ? record.remarks : ''
+          };
+        });
+
+        renderBulkAttendance();
+      } catch (e) { console.error(e); }
+    }
+
+    function renderBulkAttendance() {
+      const tbody = document.getElementById('bulkAttendanceTable');
+      tbody.innerHTML = currentBulkAttendance.map((item, idx) => `
+        <tr>
+          <td>${item.roll || '-'}</td>
+          <td><b>${item.name}</b></td>
+          <td>
+            <div style="display:flex; gap:8px;">
+              <button onclick="updateAttStatus(${idx}, 'present')" class="status-pill ${item.status === 'present' ? 'active-p' : ''}">P</button>
+              <button onclick="updateAttStatus(${idx}, 'absent')" class="status-pill ${item.status === 'absent' ? 'active-a' : ''}">A</button>
+              <button onclick="updateAttStatus(${idx}, 'late')" class="status-pill ${item.status === 'late' ? 'active-l' : ''}">L</button>
+              <button onclick="updateAttStatus(${idx}, 'leave')" class="status-pill ${item.status === 'leave' ? 'active-lv' : ''}">Lv</button>
+            </div>
+          </td>
+          <td><input type="text" placeholder="Note..." onchange="updateAttRemarks(${idx}, this.value)" value="${item.remarks}" class="form-control" style="width:100%; border:1px solid #ddd; padding:6px 10px; border-radius:4px;"></td>
+        </tr>
+      `).join('');
+
+      document.getElementById('bulk-att-container').style.display = 'block';
+      updateAttStats();
+    }
+
+    function updateAttStatus(idx, status) {
+      currentBulkAttendance[idx].status = status;
+      renderBulkAttendance();
+    }
+    function updateAttRemarks(idx, val) { currentBulkAttendance[idx].remarks = val; }
+
+    function markAllAttendance(status) {
+      currentBulkAttendance.forEach(i => i.status = status);
+      renderBulkAttendance();
+    }
+
+    function updateAttStats() {
+      const total = currentBulkAttendance.length;
+      const present = currentBulkAttendance.filter(i => i.status === 'present').length;
+      const absent = currentBulkAttendance.filter(i => i.status === 'absent').length;
+      const late = currentBulkAttendance.filter(i => i.status === 'late').length;
+      const leave = currentBulkAttendance.filter(i => i.status === 'leave').length;
+      document.getElementById('att-stat-total').innerText = total;
+      document.getElementById('att-stat-present').innerText = present;
+      document.getElementById('att-stat-absent').innerText = absent;
+      document.getElementById('att-stat-late').innerText = late;
+      document.getElementById('att-stat-leave').innerText = leave;
+    }
+
+    async function fetchBulkAttendance() {
+      const classId = document.getElementById('att-class-select').value;
+      const date = document.getElementById('att-date-input').value;
+      if (!classId || !date) return alert("Select Class and Date");
+
+      try {
+        const [sRes, aRes] = await Promise.all([
+          fetch(`${API_BASE}/students?classId=${classId}&status=active`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/attendance?classId=${classId}&date=${date}`, { headers: getHeaders() })
+        ]);
+        const students = await sRes.json();
+        const attendance = await aRes.json();
+        const sList = Array.isArray(students) ? students : (students.data || []);
+        const aList = Array.isArray(attendance) ? attendance : (attendance.data || []);
+
+        currentBulkAttendance = sList.map(s => {
+          const record = aList.find(r => r.studentId?._id === s._id);
+          return {
+            studentId: s._id,
+            name: s.name,
+            roll: s.rollNumber,
+            status: record ? record.status : 'present',
+            remarks: record ? record.remarks : ''
+          };
+        });
+
+        // Populate history student dropdown while we are at it
+        document.getElementById('att-hist-student').innerHTML = '<option value="">-- All Students --</option>' +
+          sList.map(s => `<option value="${s._id}">${s.name}</option>`).join('');
+
+        renderBulkAttendance();
+      } catch (e) { console.error(e); }
+    }
+
+    async function saveBulkAttendance() {
+      const classId = document.getElementById('att-class-select').value;
+      const date = document.getElementById('att-date-input').value;
+      const entries = currentBulkAttendance.map(i => ({ studentId: i.studentId, status: i.status, remarks: i.remarks }));
+
+      try {
+        const res = await fetch(`${API_BASE}/attendance/bulk`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ classId, date, entries })
+        });
+        if (res.ok) alert("Attendance saved successully!");
+        else alert("Failed to save attendance.");
+      } catch (e) { console.error(e); }
+    }
+
+    function initAttendanceDates() {
+      const today = new Date().toISOString().split('T')[0];
+      const lastWeek = new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0];
+      document.getElementById('att-date-input').value = today;
+      document.getElementById('att-hist-start').value = lastWeek;
+      document.getElementById('att-hist-end').value = today;
+    }
+    initAttendanceDates();
+
+    async function loadAttendanceHistory() {
+      const classId = document.getElementById('att-class-select').value;
+      if (!classId) return;
+
+      const startDate = document.getElementById('att-hist-start').value;
+      const endDate = document.getElementById('att-hist-end').value;
+      const studentId = document.getElementById('att-hist-student').value;
+
+      let query = `${API_BASE}/attendance?classId=${classId}&startDate=${startDate}&endDate=${endDate}`;
+      if (studentId) query += `&studentId=${studentId}`;
+
+      try {
+        const res = await fetch(query, { headers: getHeaders() });
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.data || []);
+        document.getElementById('attendanceHistoryTable').innerHTML = list.map(a => `
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 12px 15px;">${new Date(a.date).toLocaleDateString()}</td>
+            <td style="padding: 12px 15px;"><b>${a.studentId ? a.studentId.name : 'Unknown'}</b></td>
+            <td style="padding: 12px 15px;">
+              <span style="padding: 4px 8px; border-radius: 12px; fontSize: 11px; font-weight: bold; text-transform: uppercase; 
+                background: ${a.status === 'present' ? '#e8f8f5' : a.status === 'absent' ? '#fdedec' : '#fef9e7'}; 
+                color: ${a.status === 'present' ? '#27ae60' : a.status === 'absent' ? '#c0392b' : '#f39c12'};">
+                ${a.status}
+              </span>
+            </td>
+            <td style="padding: 12px 15px; color: #666;">${a.remarks || ''}</td>
+          </tr>
+        `).join('');
+        if (list.length === 0) {
+          document.getElementById('attendanceHistoryTable').innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: #999;">No attendance records found for this period.</td></tr>';
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function deleteAttendance(id) {
+      if (!confirm("Delete record?")) return;
+      await fetch(`${API_BASE}/attendance/${id}`, { method: 'DELETE', headers: getHeaders() });
+      loadAttendanceHistory();
+    }
+
+    // ================= MARKS LOGIC (Bulk, Matrix, History) =================
+    let currentBulkMarks = [];
+
+    async function fetchBulkStudentsForMarks() {
+      const classId = document.getElementById('marks-class-select').value;
+      const subId = document.getElementById('marks-subject-select').value;
+      const exam = document.getElementById('marks-exam-select').value;
+      const year = document.getElementById('marks-year-input').value;
+      if (!classId || !subId) return alert("Select Class and Subject");
+
+      try {
+        const [sRes, mRes] = await Promise.all([
+          fetch(`${API_BASE}/students?classId=${classId}&status=active`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/marks?classId=${classId}&subjectId=${subId}&examType=${exam}&academicYear=${year}`, { headers: getHeaders() })
+        ]);
+        const students = await sRes.json();
+        const marks = await mRes.json();
+        const sList = Array.isArray(students) ? students : (students.data || []);
+        const mList = Array.isArray(marks) ? marks : (marks.data || []);
+
+        currentBulkMarks = sList.map(s => {
+          const record = mList.find(r => r.studentId?._id === s._id);
+          return {
+            studentId: s._id,
+            name: s.name,
+            roll: s.rollNumber,
+            obtained: record ? record.marksObtained : '',
+            max: record ? record.maxMarks : 100
+          };
+        });
+        renderBulkMarks();
+      } catch (e) { console.error(e); }
+    }
+
+    function renderBulkMarks() {
+      const tbody = document.getElementById('bulkMarksTable');
+      tbody.innerHTML = currentBulkMarks.map((item, idx) => {
+        const pct = item.obtained && item.max ? ((item.obtained / item.max) * 100).toFixed(1) : '-';
+        return `
+          <tr>
+            <td>${item.roll || '-'}</td>
+            <td><b>${item.name}</b></td>
+            <td><input type="number" onchange="updateMarkObtained(${idx}, this.value)" value="${item.obtained}" style="width:70px; padding:4px;"></td>
+            <td><input type="number" onchange="updateMarkMax(${idx}, this.value)" value="${item.max}" style="width:70px; padding:4px;"></td>
+            <td><b style="color:${pct >= 40 ? '#2ecc71' : '#e74c3c'}">${pct}%</b></td>
+          </tr>
+        `;
+      }).join('');
+      document.getElementById('bulk-marks-container').style.display = 'block';
+      updateMarksStats();
+    }
+
+    function updateMarkObtained(idx, val) { currentBulkMarks[idx].obtained = val; updateMarksStats(); }
+    function updateMarkMax(idx, val) { currentBulkMarks[idx].max = val; updateMarksStats(); }
+
+    function updateMarksStats() {
+      const scored = currentBulkMarks.map(m => parseFloat(m.obtained)).filter(v => !isNaN(v));
+      if (scored.length === 0) return;
+      const high = Math.max(...scored);
+      const avg = (scored.reduce((a, b) => a + b, 0) / scored.length).toFixed(1);
+      document.getElementById('marks-stat-avg').innerText = avg + '%';
+      document.getElementById('marks-stat-high').innerText = high;
+      document.getElementById('marks-stat-count').innerText = scored.length;
+    }
+
+    async function saveBulkMarks() {
+      const classId = document.getElementById('marks-class-select').value;
+      const subjectId = document.getElementById('marks-subject-select').value;
+      const examType = document.getElementById('marks-exam-select').value;
+      const academicYear = document.getElementById('marks-year-input').value;
+
+      const marks = currentBulkMarks.map(i => ({ studentId: i.studentId, marksObtained: i.obtained, maxMarks: i.max }))
+        .filter(i => i.marksObtained !== '');
+
+      try {
+        const res = await fetch(`${API_BASE}/marks/bulk`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ classId, subjectId, examType, academicYear, marks })
+        });
+        if (res.ok) alert("Marks saved!");
+        else alert("Save failed");
+      } catch (e) { console.error(e); }
+    }
+
+    async function fetchClassResults() {
+      const classId = document.getElementById('results-class-select').value;
+      const exam = document.getElementById('results-exam-select').value;
+      const year = document.getElementById('results-year-input').value;
+      if (!classId) return alert("Please select a class.");
+
+      try {
+        const [sRes, mRes, subRes] = await Promise.all([
+          fetch(`${API_BASE}/students?classId=${classId}&status=active`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/marks?classId=${classId}&examType=${exam}&academicYear=${year}`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/subjects`, { headers: getHeaders() })
+        ]);
+
+        const students = await sRes.json();
+        const allMarks = await mRes.json();
+        const subjects = await subRes.json();
+
+        const sList = Array.isArray(students) ? students : (students.data || []);
+        const mList = Array.isArray(allMarks) ? allMarks : (allMarks.data || []);
+        const subList = Array.isArray(subjects) ? subjects : (subjects.data || []);
+
+        // Process marks into map: studentId -> subjectId -> marksObtained
+        const marksMap = {};
+        mList.forEach(m => {
+          const sid = m.studentId?._id || m.studentId;
+          const subId = m.subjectId?._id || m.subjectId;
+          if (!marksMap[sid]) marksMap[sid] = {};
+          marksMap[sid][subId] = m.marksObtained;
+        });
+
+        // Generate Table Header
+        let headerHtml = `<th class="sticky-col-roll">Roll</th><th class="sticky-col-name">Student</th>`;
+        subList.forEach(sub => {
+          headerHtml += `<th style="text-align:center;">${sub.name}</th>`;
+        });
+        document.getElementById('results-matrix-head').innerHTML = headerHtml;
+
+        // Generate Table Body
+        let bodyHtml = '';
+        sList.forEach(student => {
+          bodyHtml += `<tr>
+            <td class="sticky-cell-roll">${student.rollNumber || '-'}</td>
+            <td class="sticky-cell-name">${student.name}</td>`;
+          subList.forEach(sub => {
+            const mark = marksMap[student._id] ? marksMap[student._id][sub._id] : undefined;
+            bodyHtml += `<td style="text-align:center;">${mark !== undefined ? `<b>${mark}</b>` : '<span style="color:#ccc">-</span>'}</td>`;
+          });
+          bodyHtml += `</tr>`;
+        });
+        document.getElementById('results-matrix-body').innerHTML = bodyHtml;
+        document.getElementById('results-matrix-container').style.display = 'block';
+
+      } catch (e) {
+        console.error(e);
+        alert("Failed to load results");
+      }
+    }
+
+    async function loadHistoryStudents(classId) {
+      if (!classId) {
+        document.getElementById('history-student-select').innerHTML = '<option value="">-- Select Student --</option>';
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/students?classId=${classId}&status=active`, { headers: getHeaders() });
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.data || []);
+        document.getElementById('history-student-select').innerHTML = '<option value="">-- Select Student --</option>' +
+          list.map(s => `<option value="${s._id}">${s.name} (${s.rollNumber || '-'})</option>`).join('');
+      } catch (e) { console.error(e); }
+    }
+
+    async function fetchStudentMarksHistory() {
+      const studentId = document.getElementById('history-student-select').value;
+      if (!studentId) return alert("Please select a student.");
+
+      try {
+        const res = await fetch(`${API_BASE}/marks?studentId=${studentId}`, { headers: getHeaders() });
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.data || []);
+
+        document.getElementById('studentMarksHistoryTable').innerHTML = list.map(m => {
+          const percent = ((m.marksObtained / m.maxMarks) * 100).toFixed(1);
+          return `
+            <tr>
+              <td>${m.subjectId?.name || 'Unknown'}</td>
+              <td style="text-transform: capitalize;">${m.examType}</td>
+              <td><b>${m.marksObtained}</b></td>
+              <td>${m.maxMarks}</td>
+              <td style="font-weight: bold; color: ${percent >= 40 ? '#27ae60' : '#e74c3c'}">${percent}%</td>
+              <td>${m.academicYear}</td>
+            </tr>
+          `;
+        }).join('');
+        document.getElementById('student-history-container').style.display = 'block';
+      } catch (e) {
+        console.error(e);
+        alert("Failed to load history");
+      }
+    }
+
+    // ================= ATTENDANCE LOGIC =================
+    window.onload = init;
+
+    window.onload = init;
+  </script>
+</body>
+
+</html>

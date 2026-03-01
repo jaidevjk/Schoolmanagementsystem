@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>School Management — Static Preview</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <header style="background:linear-gradient(90deg,#1f4d91,#2b5dab);color:#fff;padding:20px">
+        <div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center">
+            <div>
+                <h1 style="margin:0">School Management</h1><small>Static preview</small>
+            </div>
+            <nav style="display:flex;gap:12px">
+                <a href="pages/admin/admin-dashboard.html" style="color:#fff;text-decoration:none">Admin Dashboard</a>
+                <a href="pages/teacher/teacher-dashboard.html" style="color:#fff;text-decoration:none">Teacher</a>
+                <a href="pages/student/student-dashboard.html" style="color:#fff;text-decoration:none">Student</a>
+            </nav>
+        </div>
+    </header>
+    <main style="max-width:1100px;margin:30px auto;padding:0 20px">
+        <section class="dash-card">
+            <h2>Welcome to the static preview</h2>
+            <p>This is a fully static version of the React client that will call your backend API endpoints directly
+                (for example <code>/api/students</code>), using the JWT token found in <code>localStorage.token</code>
+                if present.</p>
+            <p>Click one of the links above to open the corresponding dashboard.</p>
+        </section>
+    </main>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

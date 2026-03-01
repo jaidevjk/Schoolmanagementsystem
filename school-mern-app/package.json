@@ -1,0 +1,16 @@
+{
+  "name": "school-mern-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "School Management System - MERN Stack",
+  "scripts": {
+    "server": "npm run start --prefix server",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "seed": "npm run seed --prefix server",
+    "build": "npm run build --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

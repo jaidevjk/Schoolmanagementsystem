@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance Management</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f0f4f8; }
+        h1 { text-align: center; color: #2c3e50; }
+        form, table { margin: 20px auto; width: 80%; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 5px 10px rgba(0,0,0,0.1);}
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        button { padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; margin:2px;}
+        .delete-btn { background: #e74c3c; color: #fff; }
+        .edit-btn { background: #3498db; color: #fff; }
+        .save-btn { background: #2ecc71; color: #fff; }
+    </style>
+</head>
+<body>
+
+<h1>Attendance Management</h1>
+
+<form id="attendanceForm">
+    <select id="studentSelect" required>
+        <option value="">Select Student</option>
+    </select>
+    <input type="date" id="date" required>
+    <select id="status">
+        <option value="present">Present</option>
+        <option value="absent">Absent</option>
+    </select>
+    <button type="submit">Add Attendance</button>
+</form>
+
+<table id="attendanceTable">
+    <thead>
+        <tr>
+            <th>Student Name</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+const API_URL = "http://localhost:5000/api/attendance";
+const STUDENT_API = "http://localhost:5000/api/students";
+const tableBody = document.querySelector("#attendanceTable tbody");
+const studentSelect = document.getElementById("studentSelect");
+
+// Load students into dropdown
+async function loadStudents() {
+    const res = await fetch(STUDENT_API);
+    const students = await res.json();
+    studentSelect.innerHTML = '<option value="">Select Student</option>';
+    students.forEach(s => {
+        studentSelect.innerHTML += `<option value="${s._id}">${s.userId?.name || ""}</option>`;
+    });
+}
+
+// Load attendance
+async function loadAttendance() {
+    const res = await fetch(API_URL);
+    const records = await res.json();
+    tableBody.innerHTML = "";
+    records.forEach(a => {
+        tableBody.innerHTML += `
+            <tr id="row-${a._id}">
+                <td>${a.studentId || ""}</td>
+                <td id="date-${a._id}">${new Date(a.date).toLocaleDateString()}</td>
+                <td id="status-${a._id}">${a.status}</td>
+                <td>
+                    <button class="edit-btn" onclick="editAttendance('${a._id}')">Edit</button>
+                    <button class="delete-btn" onclick="deleteAttendance('${a._id}')">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+// Add attendance
+document.getElementById("attendanceForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const data = {
+        studentId: studentSelect.value,
+        date: document.getElementById("date").value,
+        status: document.getElementById("status").value
+    };
+    await fetch(API_URL, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(data)});
+    alert("Attendance added!");
+    loadAttendance();
+});
+
+// Delete attendance
+async function deleteAttendance(id) {
+    await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    alert("Attendance deleted!");
+    loadAttendance();
+}
+
+// Edit attendance
+function editAttendance(id) {
+    const dateCell = document.getElementById(`date-${id}`);
+    const statusCell = document.getElementById(`status-${id}`);
+    const oldDate = dateCell.innerText;
+    const oldStatus = statusCell.innerText;
+
+    dateCell.innerHTML = `<input type="date" id="edit-date-${id}" value="${oldDate.split('/').reverse().join('-')}">`;
+    statusCell.innerHTML = `
+        <select id="edit-status-${id}">
+            <option value="present" ${oldStatus=="present"?'selected':''}>Present</option>
+            <option value="absent" ${oldStatus=="absent"?'selected':''}>Absent</option>
+        </select>
+    `;
+
+    const actionsCell = dateCell.parentElement.querySelector("td:last-child");
+    actionsCell.innerHTML = `<button class="save-btn" onclick="saveAttendance('${id}')">Save</button>`;
+}
+
+// Save attendance
+async function saveAttendance(id) {
+    const newDate = document.getElementById(`edit-date-${id}`).value;
+    const newStatus = document.getElementById(`edit-status-${id}`).value;
+    await fetch(`${API_URL}/${id}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ date: newDate, status: newStatus }) });
+    alert("Attendance updated!");
+    loadAttendance();
+}
+
+loadStudents();
+loadAttendance();
+</script>
+
+</body>
+</html>

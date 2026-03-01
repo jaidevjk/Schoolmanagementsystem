@@ -1,0 +1,21 @@
+[
+  {"studentEmail":"student1@example.com","date":"2026-02-01","status":"Present"},
+  {"studentEmail":"student2@example.com","date":"2026-02-01","status":"Absent"},
+  {"studentEmail":"student3@example.com","date":"2026-02-01","status":"Present"},
+  {"studentEmail":"student4@example.com","date":"2026-02-01","status":"Present"},
+  {"studentEmail":"student5@example.com","date":"2026-02-01","status":"Absent"},
+  
+  {"studentEmail":"student1@example.com","date":"2026-02-02","status":"Present"},
+  {"studentEmail":"student2@example.com","date":"2026-02-02","status":"Present"},
+  {"studentEmail":"student3@example.com","date":"2026-02-02","status":"Absent"},
+  {"studentEmail":"student4@example.com","date":"2026-02-02","status":"Present"},
+  {"studentEmail":"student5@example.com","date":"2026-02-02","status":"Present"},
+  
+  {"studentEmail":"student1@example.com","date":"2026-02-03","status":"Absent"},
+  {"studentEmail":"student2@example.com","date":"2026-02-03","status":"Present"},
+  {"studentEmail":"student3@example.com","date":"2026-02-03","status":"Present"},
+  {"studentEmail":"student4@example.com","date":"2026-02-03","status":"Present"},
+  {"studentEmail":"student5@example.com","date":"2026-02-03","status":"Absent"}
+  
+
+]

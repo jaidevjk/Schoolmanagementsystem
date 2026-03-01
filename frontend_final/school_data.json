@@ -1,0 +1,51 @@
+{
+  "teachers": [
+    { "name": "Alice Johnson", "email": "alice1@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Bob Smith", "email": "bob2@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Carol Davis", "email": "carol3@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "David Wilson", "email": "david4@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Emma Taylor", "email": "emma5@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Frank Brown", "email": "frank6@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Grace Lee", "email": "grace7@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Henry Martin", "email": "henry8@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Isla Clark", "email": "isla9@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Jack Lewis", "email": "jack10@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Karen Walker", "email": "karen11@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Leo Hall", "email": "leo12@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Mia Allen", "email": "mia13@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Nathan Young", "email": "nathan14@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Olivia King", "email": "olivia15@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Peter Scott", "email": "peter16@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Quinn Adams", "email": "quinn17@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Rachel Baker", "email": "rachel18@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Sam Carter", "email": "sam19@school.com", "password": "$2b$10$hashed123456" },
+    { "name": "Tina Perez", "email": "tina20@school.com", "password": "$2b$10$hashed123456" }
+  ],
+  "students": [
+    { "name": "Student 1", "email": "student1@school.com", "class": "1", "section": "A" },
+    { "name": "Student 2", "email": "student2@school.com", "class": "1", "section": "A" },
+    { "name": "Student 3", "email": "student3@school.com", "class": "1", "section": "B" },
+    { "name": "Student 4", "email": "student4@school.com", "class": "1", "section": "B" },
+    { "name": "Student 5", "email": "student5@school.com", "class": "2", "section": "A" },
+    { "name": "Student 6", "email": "student6@school.com", "class": "2", "section": "A" },
+    { "name": "Student 7", "email": "student7@school.com", "class": "2", "section": "B" },
+    { "name": "Student 8", "email": "student8@school.com", "class": "2", "section": "B" },
+    { "name": "Student 9", "email": "student9@school.com", "class": "3", "section": "A" },
+    { "name": "Student 10", "email": "student10@school.com", "class": "3", "section": "A" }
+   
+  ],
+  "attendance": [
+    { "studentId": "student1", "date": "2026-02-01", "status": "present" },
+    { "studentId": "student2", "date": "2026-02-01", "status": "absent" },
+    { "studentId": "student3", "date": "2026-02-01", "status": "present" }
+    
+  ],
+  "marks": [
+    { "studentId": "student1", "subject": "Math", "marks": 80 },
+    { "studentId": "student1", "subject": "English", "marks": 75 },
+    { "studentId": "student1", "subject": "Science", "marks": 85 },
+    { "studentId": "student1", "subject": "History", "marks": 90 },
+    { "studentId": "student1", "subject": "Geography", "marks": 70 }
+   
+  ]
+}

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin — Marks</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand"><span class="logo">SM</span><span>Admin</span></div>
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html" class="nav-item">Dashboard</a>
+                <a href="admin-students.html" class="nav-item">Students</a>
+                <a href="admin-teachers.html" class="nav-item">Teachers</a>
+                <a href="admin-classes.html" class="nav-item">Classes</a>
+                <a href="admin-subjects.html" class="nav-item">Subjects</a>
+                <a href="admin-attendance.html" class="nav-item">Attendance</a>
+                <a href="admin-marks.html" class="nav-item active">Marks</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info"><strong>Admin User</strong><span class="badge">Administrator</span></div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="dash-header">
+                <h2>Marks</h2>
+            </div>
+            <section class="dash-card">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <h3>Exam / Marks Management</h3>
+                    <button class="btn btn-primary">+ Add Marks</button>
+                </div>
+                <div class="dash-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th>Exam</th>
+                                <th>Marks</th>
+                                <th>Academic Year</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="marks-tbody">
+                            <!-- populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="../js/main.js"></script>
+    <script>
+        async function loadMarks() {
+            try {
+                const data = await window.api.get('/marks');
+                const list = Array.isArray(data) ? data : [];
+                const tbody = document.getElementById('marks-tbody');
+                tbody.innerHTML = list.map(m => `
+                        <tr>
+                            <td>${m.studentId?.name || ''}</td>
+                            <td>${m.subjectId?.name || ''}</td>
+                            <td>${m.examName || m.examType}</td>
+                            <td>${m.marksObtained} / ${m.maxMarks || ''}</td>
+                            <td>${m.academicYear || '-'}</td>
+                            <td><button class="btn" onclick="openEditMark('${m._id}')">Edit</button> <button class="btn" style="background:#e74c3c;color:#fff" onclick="deleteMark('${m._id}')">Delete</button></td>
+                        </tr>
+                    `).join('');
+            } catch (e) { console.error(e); alert('Failed to load marks'); }
+        }
+
+        function openEditMark(id) {
+            window.api.get(`/marks/${id}`).then(m => {
+                const modal = window.showModal(`
+                        <h3>Edit Marks</h3>
+                        <form id="mark-form">
+                            <div><label>Marks Obtained</label><input name="marksObtained" type="number" value="${m.marksObtained || ''}" required></div>
+                            <div><label>Academic Year</label><input name="academicYear" value="${m.academicYear || ''}"></div>
+                            <div style="margin-top:12px"><button id="save" class="btn btn-primary">Save</button> <button id="cancel" class="btn">Cancel</button></div>
+                        </form>
+                    `);
+                modal.box.querySelector('#cancel').addEventListener('click', () => modal.close());
+                modal.box.querySelector('#save').addEventListener('click', async () => {
+                    const form = modal.box.querySelector('#mark-form');
+                    try { await window.api.put(`/marks/${id}`, { marksObtained: Number(form.marksObtained.value), academicYear: form.academicYear.value }); alert('Updated'); modal.close(); loadMarks(); } catch (e) { alert('Update failed'); }
+                });
+            }).catch(() => alert('Failed to load mark'));
+        }
+
+        async function deleteMark(id) {
+            if (!confirm('Delete this record?')) return;
+            try { await window.api.del(`/marks/${id}`); alert('Deleted'); loadMarks(); } catch (e) { alert('Delete failed'); }
+        }
+
+        document.querySelector('.btn.btn-primary').addEventListener('click', () => {
+            const modal = window.showModal(`
+                    <h3>Add Marks</h3>
+                    <form id="mark-form">
+                        <div><label>Student ID</label><input name="studentId" required></div>
+                        <div><label>Subject ID</label><input name="subjectId" required></div>
+                        <div><label>Class ID</label><input name="classId" required></div>
+                        <div><label>Exam Type</label><input name="examType" value="midterm" required></div>
+                        <div><label>Marks Obtained</label><input name="marksObtained" type="number" required></div>
+                        <div style="margin-top:12px"><button id="save" class="btn btn-primary">Save</button> <button id="cancel" class="btn">Cancel</button></div>
+                    </form>
+                `);
+            modal.box.querySelector('#cancel').addEventListener('click', () => modal.close());
+            modal.box.querySelector('#save').addEventListener('click', async () => {
+                const f = modal.box.querySelector('#mark-form');
+                const body = { studentId: f.studentId.value, subjectId: f.subjectId.value, classId: f.classId.value, examType: f.examType.value, marksObtained: Number(f.marksObtained.value) };
+                try { await window.api.post('/marks', body); alert('Saved'); modal.close(); loadMarks(); } catch (e) { alert('Failed to save'); }
+            });
+        });
+
+        loadMarks();
+    </script>
+</body>
+
+</html>

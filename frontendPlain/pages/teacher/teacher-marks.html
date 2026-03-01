@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Teacher — Grades</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-brand"><span class="logo">SM</span><span>Teacher</span></div>
+            <nav class="sidebar-nav">
+                <a href="teacher-dashboard.html" class="nav-item">Dashboard</a>
+                <a href="teacher-attendance.html" class="nav-item">Attendance</a>
+                <a href="teacher-marks.html" class="nav-item active">Grades</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info"><strong>Teacher User</strong><span class="badge">Teacher</span></div>
+            </div>
+        </aside>
+        <main class="main-content">
+            <div class="dash-header">
+                <h2>Enter Grades</h2>
+            </div>
+            <section class="dash-card">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <h3>Grades</h3>
+                    <button class="btn btn-primary">+ Add Marks</button>
+                </div>
+                <div class="dash-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th>Exam</th>
+                                <th>Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Alice Williams</td>
+                                <td>English</td>
+                                <td>midterm</td>
+                                <td>90 / 100</td>
+                            </tr>
+                            <tr>
+                                <td>Bob Brown</td>
+                                <td>Mathematics</td>
+                                <td>midterm</td>
+                                <td>78 / 100</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="../js/main.js"></script>
+</body>
+
+</html>

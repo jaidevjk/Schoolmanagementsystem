@@ -33,11 +33,11 @@
 // //         }
 // //     }
 // // });
- 
+
 // // var Upload =  upload.single('image');
 
 // exports.createUser =(req,res) => {
-    
+
 
 //     const newUser = new User({
 //     name: req.body.name?.toLowerCase(),
@@ -94,14 +94,14 @@
 //     // })
 //         User.findOne({phonenumber}).then(user => {
 //             if(!user) { 
-                
+
 //                 res.status(400).json({msg: 'User does not exist'});
-                
-                
+
+
 //             } else{
 //                                 { id: user._id }
 //                                res.json({
-                               
+
 //                                 user: {
 //                                     user_id: user._id,
 //                                     name: user.name,
@@ -113,13 +113,13 @@
 //                                     }); 
 //                                }
 
-                               
-                                
-                            
-                            
-                        
-                    
-                
+
+
+
+
+
+
+
 //         })
 
 // };
@@ -240,17 +240,24 @@ exports.loginUser = async (req, res) => {
 // ===============================
 exports.listUsers = async (req, res) => {
     try {
+        console.log("listUsers called - fetching all users from database");
 
         const users = await User.find().sort({ createdAt: -1 });
 
-        res.json({
+        console.log(`Found ${users.length} users in database`);
+        console.log("Users:", users);
+
+        res.status(200).json({
             status: 1,
+            message: "Users fetched successfully",
             data: users
         });
 
     } catch (error) {
+        console.error("Error in listUsers:", error);
         res.status(500).json({
             status: 0,
+            message: "Error fetching users",
             error: error.message
         });
     }
@@ -403,11 +410,83 @@ exports.deleteUser = async (req, res) => {
 };
 
 
+// ===============================
+// GET SINGLE USER
+// ===============================
+exports.getUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            return res.status(404).json({
+                status: 0,
+                message: "User not found"
+            });
+        }
+
+        res.json({
+            status: 1,
+            data: user
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            status: 0,
+            error: error.message
+        });
+    }
+};
+
+
+// ===============================
+// UPDATE USER (Student)
+// ===============================
+exports.updateUser = async (req, res) => {
+    try {
+        const { name, email, phonenumber, parentName, dob, gender, address, grade } = req.body;
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.params.id,
+            {
+                name: name?.toLowerCase(),
+                email: email?.toLowerCase(),
+                phonenumber,
+                parentName: parentName?.toLowerCase(),
+                dob,
+                gender: gender?.toLowerCase(),
+                address: address?.toLowerCase(),
+                grade
+            },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                status: 0,
+                message: "User not found"
+            });
+        }
+
+        res.json({
+            status: 1,
+            message: "User updated successfully",
+            data: updatedUser
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            status: 0,
+            error: error.message
+        });
+    }
+};
+
+
 
 // ===============================
 // USER FORM PAGE
 // ===============================
-exports.userformController = function(req, res) {
+exports.userformController = function (req, res) {
     let completePath = path.join(__dirname + "/../user.html");
     res.sendFile(completePath);
 };
