@@ -1,43 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>Student Portal Login</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-*{ box-sizing:border-box; font-family:Arial,sans-serif; }
-body{ margin:0;height:100vh;display:flex;justify-content:center;align-items:center;background:#eaeaf0;}
-.container{ width:900px;height:520px;display:flex;border-radius:12px;overflow:hidden;box-shadow:0 15px 40px rgba(0,0,0,0.25);}
-.left{width:40%;background:#111216;color:white;padding:60px 40px;}
-.left h1{margin-bottom:10px;}
-.left p{font-size:14px;color:#aaa;margin-bottom:40px;}
-.input-box{margin-bottom:25px;}
-.input-box input,
-.input-box select{ width:100%;padding:12px;background:transparent;border:1px solid #444;border-radius:6px;color:white;font-size:15px;}
-.input-box input::placeholder{color:#777;}
-.login-btn{ margin-top:20px;width:100%;padding:12px;background:#9b6ef3;border:none;border-radius:8px;color:white;font-size:16px;cursor:pointer;}
-.login-btn:hover{background:#8a5de8;}
-.error{margin-top:15px;color:#ff6b6b;font-size:14px;}
-.right{ width:60%;background:#9b6ef3;padding:60px;color:white;position:relative;}
-.right h1{font-size:36px;margin-bottom:10px;}
-.right p{font-size:15px;opacity:.9;}
-.illustration{position:absolute;bottom:20px;right:40px;width:300px;}
-@media(max-width:900px){.container{flex-direction:column;height:auto;width:90%}.left,.right{width:100%}.illustration{position:static;width:220px;margin-top:30px}}
-</style>
+  <meta charset="UTF-8">
+  <title>Student Portal Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #eaeaf0;
+    }
+
+    .container {
+      width: 900px;
+      height: 520px;
+      display: flex;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .left {
+      width: 40%;
+      background: #111216;
+      color: white;
+      padding: 60px 40px;
+    }
+
+    .left h1 {
+      margin-bottom: 10px;
+    }
+
+    .left p {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 40px;
+    }
+
+    .input-box {
+      margin-bottom: 25px;
+    }
+
+    .input-box input,
+    .input-box select {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: white;
+      font-size: 15px;
+    }
+
+    .input-box input::placeholder {
+      color: #777;
+    }
+
+    .login-btn {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background: #9b6ef3;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      background: #8a5de8;
+    }
+
+    .error {
+      margin-top: 15px;
+      color: #ff6b6b;
+      font-size: 14px;
+    }
+
+    .right {
+      width: 60%;
+      background: #9b6ef3;
+      padding: 60px;
+      color: white;
+      position: relative;
+    }
+
+    .right h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .right p {
+      font-size: 15px;
+      opacity: .9;
+    }
+
+    .illustration {
+      position: absolute;
+      bottom: 20px;
+      right: 40px;
+      width: 300px;
+    }
+
+    @media(max-width:900px) {
+      .container {
+        flex-direction: column;
+        height: auto;
+        width: 90%
+      }
+
+      .left,
+      .right {
+        width: 100%
+      }
+
+      .illustration {
+        position: static;
+        width: 220px;
+        margin-top: 30px
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="container">
-  <div class="left">
-    <h1>Login</h1>
-    <p>Enter your account details</p>
-    <div class="input-box">
-      <input type="email" id="email" placeholder="Email">
-    </div>
-    <div class="input-box">
-      <input type="password" id="password" placeholder="Password">
-    </div>
-    <!-- <div class="input-box">
+  <div class="container">
+    <div class="left">
+      <h1>Login</h1>
+      <p>Enter your account details</p>
+      <div class="input-box">
+        <input type="email" id="email" placeholder="Email">
+      </div>
+      <div class="input-box">
+        <input type="password" id="password" placeholder="Password">
+      </div>
+      <!-- <div class="input-box">
       <select id="role">
         <option value="">Select Role</option>
         <option value="Admin">Admin</option>
@@ -45,51 +153,64 @@ body{ margin:0;height:100vh;display:flex;justify-content:center;align-items:cent
         <option value="Student">Student</option>
       </select>
     </div> -->
-    <button class="login-btn" id="loginBtn" type="button">Login</button>
-    <div class="error" id="errorMsg"></div>
+      <button class="login-btn" id="loginBtn" type="button">Login</button>
+      <div class="error" id="errorMsg"></div>
+
+      <div style="margin-top: 30px; border-top: 1px solid #444; padding-top: 20px;">
+        <p style="font-size: 13px; color: #aaa; margin-bottom: 15px;">Don't have an account?</p>
+        <a href="register.html"
+          style="display: inline-block; width: 100%; padding: 10px; background: #444; border: none; border-radius: 6px; color: white; text-align: center; text-decoration: none; font-size: 15px; cursor: pointer; transition: 0.3s;">Create
+          New Account</a>
+
+        <p style="font-size: 13px; color: #aaa; margin-top: 20px; margin-bottom: 15px;">Forgot your password?</p>
+        <a href="forgot-password.html"
+          style="display: inline-block; width: 100%; padding: 10px; background: #555; border: none; border-radius: 6px; color: white; text-align: center; text-decoration: none; font-size: 15px; cursor: pointer; transition: 0.3s;">Reset
+          Password</a>
+      </div>
+    </div>
+
+    <div class="right">
+      <h1>Welcome to<br>Student Portal</h1>
+      <p>Login to access your account</p>
+      <img class="illustration" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+    </div>
   </div>
 
-  <div class="right">
-    <h1>Welcome to<br>Student Portal</h1>
-    <p>Login to access your account</p>
-    <img class="illustration" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
-  </div>
-</div>
+  <script>
+    document.getElementById("loginBtn").addEventListener("click", async function () {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      // const selectedRole = document.getElementById("role").value.trim();
+      // const errorMsg = document.getElementById("errorMsg");
+      errorMsg.innerText = "";
 
-<script>
-document.getElementById("loginBtn").addEventListener("click", async function() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  // const selectedRole = document.getElementById("role").value.trim();
-  // const errorMsg = document.getElementById("errorMsg");
-  errorMsg.innerText = "";
+      // if(!email || !password || !selectedRole){ errorMsg.innerText="Fill all fields"; return; }
 
-  // if(!email || !password || !selectedRole){ errorMsg.innerText="Fill all fields"; return; }
-  
-  if(!email || !password ){ errorMsg.innerText="Fill all fields"; return; }
-  console.log("email",email,'and password',password)
+      if (!email || !password) { errorMsg.innerText = "Fill all fields"; return; }
+      console.log("email", email, 'and password', password)
 
-  try {
-    const res = await fetch("http://localhost:4003/admin/login", {
-      method:"POST",
-      headers: { "Content-Type":"application/json" },
-      body: JSON.stringify({ email, password })//, role: selectedRole
+      try {
+        const res = await fetch("http://localhost:4003/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })//, role: selectedRole
+        });
+        const data = await res.json();
+        console.log('response', data);
+        if (res.ok) {
+          localStorage.setItem("role", data.user.role);
+          localStorage.setItem("name", data.user.name);
+          if (data.user.role.toLowerCase() === "admin") window.location.href = "admin-dashboard.html";
+          else if (data.user.role.toLowerCase() === "teacher") window.location.href = "teacher-dashboard.html";
+          else window.location.href = "student-dashboard.html";
+        } else errorMsg.innerText = data.message;
+      } catch (err) {
+        errorMsg.innerText = "Server error. Is backend running?";
+        console.log(err);
+      }
     });
-    const data = await res.json();
-    console.log('response',data);
-    if(res.ok){
-      localStorage.setItem("role", data.user.role);
-      localStorage.setItem("name", data.user.name);
-      if(data.user.role.toLowerCase()==="admin") window.location.href="admin-dashboard.html";
-      else if(data.user.role.toLowerCase()==="teacher") window.location.href="teacher-dashboard.html";
-      else window.location.href="student-dashboard.html";
-    } else errorMsg.innerText = data.message;
-  } catch(err){
-    errorMsg.innerText = "Server error. Is backend running?";
-    console.log(err);
-  }
-});
-</script>
+  </script>
 
 </body>
+
 </html>

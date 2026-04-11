@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import PublicLayout from './components/PublicLayout';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Layout from './components/Layout';
 import Home from './pages/public/Home';
 import About from './pages/public/About';
@@ -45,6 +46,8 @@ function App() {
         <Route path="contact" element={<Contact />} />
       </Route>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/password-reset" element={<PasswordReset />} />
       <Route path="/dashboard" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<ProtectedRoute roles={['admin', 'teacher', 'student']}><RoleDashboard /></ProtectedRoute>} />
         <Route path="admin/students" element={<ProtectedRoute roles={['admin']}><Students /></ProtectedRoute>} />
@@ -57,7 +60,6 @@ function App() {
         <Route path="teacher/marks" element={<ProtectedRoute roles={['teacher']}><TeacherMarks /></ProtectedRoute>} />
         <Route path="student/attendance" element={<ProtectedRoute roles={['student']}><StudentAttendance /></ProtectedRoute>} />
         <Route path="student/marks" element={<ProtectedRoute roles={['student']}><StudentMarks /></ProtectedRoute>} />
-        <Route path="password-reset" element={<ProtectedRoute roles={['admin', 'teacher', 'student']}><PasswordReset /></ProtectedRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

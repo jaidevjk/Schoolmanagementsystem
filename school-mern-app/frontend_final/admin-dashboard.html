@@ -698,8 +698,14 @@
             <div class="dash-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3>Manage Students</h3>
-                    <button onclick="openStudentModal()" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add
-                        Student</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="openBulkStudentModal()" class="btn" style="background: #34495e; color: #fff;">
+                            <i class="fa-solid fa-file-excel"></i> Bulk Students
+                        </button>
+                        <button onclick="openStudentModal()" class="btn btn-primary">
+                            <i class="fa-solid fa-plus"></i> Add Student
+                        </button>
+                    </div>
                 </div>
                 <div class="dash-table-wrap">
                     <table>
@@ -1152,7 +1158,35 @@
                 </div>
             </form>
         </div>
+        <!-- Bulk Student Modal -->
+        <div id="bulkStudentModal" class="modal-overlay" style="display: none;">
+            <div class="modal">
+                <h2>Bulk Student Upload</h2>
+                <p style="margin-bottom: 20px; color: #666; font-size: 0.9rem;">Download the sample file, fill in the
+                    details, and upload it back.</p>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <button onclick="downloadSampleExcel()" class="btn" style="background: #27ae60; color: #fff;">
+                        <i class="fa-solid fa-download"></i> Download Sample Excel
+                    </button>
+                    <div style="border: 2px dashed #ddd; padding: 30px; border-radius: 8px; text-align: center;">
+                        <input type="file" id="bulkStudentFile" accept=".xlsx, .xls" style="display: none;"
+                            onchange="handleBulkFileUpload(event)">
+                        <label for="bulkStudentFile" style="cursor: pointer;">
+                            <i class="fa-solid fa-cloud-arrow-up"
+                                style="font-size: 2rem; color: #34495e; margin-bottom: 10px;"></i>
+                            <p>Click to select or drag & drop Excel file</p>
+                        </label>
+                    </div>
+                    <div id="bulkMessage" style="margin-top: 10px; display: none; padding: 10px; border-radius: 4px;">
+                    </div>
+                </div>
+                <div class="modal-actions" style="margin-top: 20px;">
+                    <button type="button" onclick="closeBulkStudentModal()" class="btn btn-ghost">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
+
 
     <script>
         // API Configuration
@@ -1192,8 +1226,22 @@
             document.getElementById('header-username').textContent = userName;
             document.getElementById('welcome-msg').innerText = `Welcome, ${userName.split(' ')[0]}!`;
 
-            // Initial Load - Dashboard
+            // Pre-fetch all essential data in parallel for speed
+            showLoading(true);
+            Promise.all([
+                loadStudents(),
+                loadTeachers(),
+                loadClasses(),
+                loadSubjects(),
+                loadDashboard()
+            ]).finally(() => showLoading(false));
+
             showView('dashboard');
+        }
+
+        function showLoading(show) {
+            // Simple loading overlay or console log if no overlay exists
+            console.log(show ? "Loading..." : "Done loading.");
         }
 
         // Navigation
@@ -1257,22 +1305,34 @@
         async function loadDashboard() {
             try {
                 const headers = getHeaders();
-                const [studentsRes, teachersRes, classesRes, attendanceRes, enquiryRes] = await Promise.all([
+                const [studentsRes, teachersRes, classesRes, attendanceRes] = await Promise.all([
                     fetch(`${API_BASE}/students`, { headers }),
                     fetch(`${API_BASE}/teachers`, { headers }),
                     fetch(`${API_BASE}/classes`, { headers }),
-                    fetch(`${API_BASE}/attendance`, { headers }).catch(() => null),
-                    fetch(`${API_BASE}/enquiry`, { headers }).catch(() => null)
+                    fetch(`${API_BASE}/attendance`, { headers }).catch(() => ({ json: () => [] }))
                 ]);
 
-                const students = await studentsRes.json();
-                const teachers = await teachersRes.json();
-                const classes = await classesRes.json();
-                const enquiries = enquiryRes ? await enquiryRes.json() : [];
-                const attendance = attendanceRes ? await attendanceRes.json() : [];
+                const [students, teachers, classes, attendance] = await Promise.all([
+                    studentsRes.json(),
+                    teachersRes.json(),
+                    classesRes.json(),
+                    attendanceRes.json()
+                ]);
 
-                const sCount = Array.isArray(students) ? students.length : (students.data ? students.data.length : 0);
-                const tCount = Array.isArray(teachers) ? teachers.length : (teachers.data ? teachers.data.length : 0);
+                const sList = Array.isArray(students) ? students : (students.data || []);
+                const tList = Array.isArray(teachers) ? teachers : (teachers.data || []);
+                const cList = Array.isArray(classes) ? classes : (classes.data || []);
+                const aList = Array.isArray(attendance) ? attendance : (attendance.data || []);
+
+                // Cache for modals
+                studentsData = sList;
+                teachersData = tList;
+                classesData = cList;
+
+                document.getElementById('stat-students').innerText = sList.length;
+                document.getElementById('stat-teachers').innerText = tList.length;
+                document.getElementById('stat-classes').innerText = cList.length;
+                document.getElementById('stat-attendance').innerText = (aList.filter(a => a.status === 'present').length / (aList.length || 1) * 100).toFixed(0) + '%';
                 const cCount = Array.isArray(classes) ? classes.length : (classes.data ? classes.data.length : 0);
 
                 document.getElementById('stat-students').innerText = sCount;
@@ -1437,16 +1497,14 @@
 
         // Modal: Add/Edit Student
         async function openStudentModal(student = null) {
-            // Load classes for dropdown
-            const res = await fetch(`${API_BASE}/classes`, { headers: getHeaders() });
-            const classes = await res.json();
-            const classList = Array.isArray(classes) ? classes : (classes.data || []);
-
-            const select = document.getElementById('studentClass');
-            select.innerHTML = '<option value="">Select Class</option>' + classList.map(c => `<option value="${c._id}">${c.name}</option>`).join('');
-
             const modal = document.getElementById('studentModal');
             document.getElementById('studentModalTitle').innerText = student ? 'Edit Student' : 'Add Student';
+            modal.style.display = 'flex'; // Show immediately
+
+            // Populate Class dropdown from cache or fetch
+            if (classesData.length === 0) await loadClasses();
+            const select = document.getElementById('studentClass');
+            select.innerHTML = '<option value="">Select Class</option>' + classesData.map(c => `<option value="${c._id}">${c.name}</option>`).join('');
 
             if (student) {
                 document.getElementById('studentId').value = student._id;
@@ -1468,6 +1526,78 @@
         }
 
         function closeStudentModal() { document.getElementById('studentModal').style.display = 'none'; }
+
+        // --- Bulk Student Functions ---
+        function openBulkStudentModal() { document.getElementById('bulkStudentModal').style.display = 'flex'; }
+        function closeBulkStudentModal() { document.getElementById('bulkStudentModal').style.display = 'none'; }
+
+        async function downloadSampleExcel() {
+            try {
+                const res = await fetch(`${API_BASE}/students/bulk/sample`, { headers: getHeaders() });
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'students_bulk_sample.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (e) {
+                console.error(e);
+                alert("Failed to download sample file");
+            }
+        }
+
+        async function handleBulkFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const msgEl = document.getElementById('bulkMessage');
+            msgEl.style.display = 'none';
+
+            try {
+                if (window.showLoading) showLoading(true);
+                const res = await fetch(`${API_BASE}/students/bulk`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                    body: formData
+                });
+                const result = await res.json();
+
+                msgEl.style.display = 'block';
+                if (res.ok) {
+                    const successText = `Successfully imported ${result.successCount} students!`;
+                    const errorText = result.errors?.length ? ` (${result.errors.length} failed)` : '';
+
+                    msgEl.innerText = successText + errorText;
+                    msgEl.style.background = '#d4edda';
+                    msgEl.style.color = '#155724';
+
+                    setTimeout(() => {
+                        closeBulkStudentModal();
+                        msgEl.style.display = 'none';
+                    }, 2500);
+
+                    loadStudents();
+                } else {
+                    msgEl.innerText = result.message || "Upload failed";
+                    msgEl.style.background = '#f8d7da';
+                    msgEl.style.color = '#721c24';
+                }
+            } catch (e) {
+                console.error(e);
+                msgEl.style.display = 'block';
+                msgEl.innerText = "Failed to upload file";
+                msgEl.style.background = '#f8d7da';
+                msgEl.style.color = '#721c24';
+            } finally {
+                if (window.showLoading) showLoading(false);
+                event.target.value = ''; // Reset file input
+            }
+        }
 
         document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1534,6 +1664,7 @@
         function openTeacherModal(teacher = null) {
             const modal = document.getElementById('teacherModal');
             document.getElementById('teacherModalTitle').innerText = teacher ? 'Edit Teacher' : 'Add Teacher';
+            modal.style.display = 'flex'; // Show immediately
 
             if (teacher) {
                 document.getElementById('teacherId').value = teacher._id;
@@ -1825,6 +1956,82 @@
             } catch (e) { console.error(e); }
         }
 
+        // --- Individual Attendance Functions ---
+        async function loadAttendance() {
+            try {
+                const res = await fetch(`${API_BASE}/attendance`, { headers: getHeaders() });
+                const data = await res.json();
+                const aList = Array.isArray(data) ? data : (data.data || []);
+
+                const tbody = document.getElementById('attendanceTable');
+                tbody.innerHTML = aList.map(a => `
+                        <tr>
+                            <td>${a.date ? new Date(a.date).toLocaleDateString() : '-'}</td>
+                            <td>${a.studentId ? a.studentId.name : (a.studentName || '-')}</td>
+                            <td>${a.classId ? a.classId.name : '-'}</td>
+                            <td><span class="badge badge-${a.status === 'present' ? 'success' : (a.status === 'absent' ? 'danger' : 'warning')}">${a.status}</span></td>
+                            <td>
+                                <button class="btn btn-sm" onclick='openAttendanceModal(${JSON.stringify(a).replace(/'/g, "&#39;")})'>Edit</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteAttendance('${a._id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteAttendance(id) {
+            if (!confirm("Delete this record?")) return;
+            await fetch(`${API_BASE}/attendance/${id}`, { method: 'DELETE', headers: getHeaders() });
+            loadAttendance();
+        }
+
+        async function openAttendanceModal(att = null) {
+            const modal = document.getElementById('attendanceModal');
+            document.getElementById('attendanceModalTitle').innerText = att ? 'Edit Record' : 'Add Record';
+            modal.style.display = 'flex'; // Show immediately
+
+            // Populate Class and Student dropdowns if empty
+            if (classesData.length === 0) await loadClasses();
+            if (studentsData.length === 0) await loadStudents();
+
+            const classSelect = document.getElementById('attendanceClass');
+            const studentSelect = document.getElementById('attendanceStudent');
+
+            classSelect.innerHTML = '<option value="">Select Class</option>' + classesData.map(c => `<option value="${c._id}">${c.name}</option>`).join('');
+            studentSelect.innerHTML = '<option value="">Select Student</option>' + studentsData.map(s => `<option value="${s._id}">${s.name}</option>`).join('');
+
+            if (att) {
+                document.getElementById('attendanceId').value = att._id;
+                document.getElementById('attendanceDate').value = att.date ? att.date.split('T')[0] : '';
+                document.getElementById('attendanceStatus').value = att.status;
+                if (att.classId) classSelect.value = att.classId._id || att.classId;
+                if (att.studentId) studentSelect.value = att.studentId._id || att.studentId;
+            } else {
+                document.getElementById('attendanceForm').reset();
+                document.getElementById('attendanceId').value = '';
+                document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
+            }
+        }
+
+        function closeAttendanceModal() { document.getElementById('attendanceModal').style.display = 'none'; }
+
+        document.getElementById('attendanceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('attendanceId').value;
+            const data = {
+                date: document.getElementById('attendanceDate').value,
+                studentId: document.getElementById('attendanceStudent').value,
+                classId: document.getElementById('attendanceClass').value,
+                status: document.getElementById('attendanceStatus').value
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_BASE}/attendance/${id}` : `${API_BASE}/attendance`;
+            await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(data) });
+            closeAttendanceModal();
+            loadAttendance();
+        });
+
+
         // ================= MARKS BULK LOGIC =================
         let currentBulkMarks = [];
 
@@ -1906,6 +2113,88 @@
                 else alert("Save failed");
             } catch (e) { console.error(e); }
         }
+
+        // --- Individual Marks Functions ---
+        async function loadMarks() {
+            try {
+                const res = await fetch(`${API_BASE}/marks`, { headers: getHeaders() });
+                const data = await res.json();
+                const mList = Array.isArray(data) ? data : (data.data || []);
+
+                const tbody = document.getElementById('marksTable');
+                tbody.innerHTML = mList.map(m => `
+                        <tr>
+                            <td>${m.studentId ? m.studentId.name : (m.studentName || '-')}</td>
+                            <td>${m.subjectId ? m.subjectId.name : '-'}</td>
+                            <td>${m.examType || (m.examName || '-')}</td>
+                            <td><b>${m.marksObtained}</b> / ${m.maxMarks}</td>
+                            <td>
+                                <button class="btn btn-sm" onclick='openMarksModal(${JSON.stringify(m).replace(/'/g, "&#39;")})'>Edit</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteMark('${m._id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteMark(id) {
+            if (!confirm("Delete this mark record?")) return;
+            await fetch(`${API_BASE}/marks/${id}`, { method: 'DELETE', headers: getHeaders() });
+            loadMarks();
+        }
+
+        async function openMarksModal(mark = null) {
+            const modal = document.getElementById('marksModal');
+            document.getElementById('marksModalTitle').innerText = mark ? 'Edit Marks' : 'Add Marks';
+            modal.style.display = 'flex'; // Show immediately
+
+            // Populate dropdowns if empty
+            if (studentsData.length === 0) await loadStudents();
+            if (subjectsData.length === 0) await loadSubjects();
+            if (classesData.length === 0) await loadClasses();
+
+            const studentSelect = document.getElementById('marksStudent');
+            const subjectSelect = document.getElementById('marksSubject');
+            const classSelect = document.getElementById('marksClass');
+
+            studentSelect.innerHTML = '<option value="">Select Student</option>' + studentsData.map(s => `<option value="${s._id}">${s.name}</option>`).join('');
+            subjectSelect.innerHTML = '<option value="">Select Subject</option>' + subjectsData.map(s => `<option value="${s._id}">${s.name}</option>`).join('');
+            classSelect.innerHTML = '<option value="">Select Class</option>' + classesData.map(c => `<option value="${c._id}">${c.name}</option>`).join('');
+
+            if (mark) {
+                document.getElementById('marksId').value = mark._id;
+                document.getElementById('marksObtained').value = mark.marksObtained;
+                document.getElementById('marksYear').value = mark.academicYear || '';
+                document.getElementById('marksExam').value = mark.examType || 'midterm';
+                if (mark.studentId) studentSelect.value = mark.studentId._id || mark.studentId;
+                if (mark.subjectId) subjectSelect.value = mark.subjectId._id || mark.subjectId;
+                if (mark.classId) classSelect.value = mark.classId._id || mark.classId;
+            } else {
+                document.getElementById('marksForm').reset();
+                document.getElementById('marksId').value = '';
+                document.getElementById('marksYear').value = new Date().getFullYear() + '-' + (new Date().getFullYear() + 1);
+            }
+        }
+
+        function closeMarksModal() { document.getElementById('marksModal').style.display = 'none'; }
+
+        document.getElementById('marksForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('marksId').value;
+            const data = {
+                studentId: document.getElementById('marksStudent').value,
+                subjectId: document.getElementById('marksSubject').value,
+                classId: document.getElementById('marksClass').value,
+                examType: document.getElementById('marksExam').value,
+                marksObtained: document.getElementById('marksObtained').value,
+                academicYear: document.getElementById('marksYear').value
+            };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_BASE}/marks/${id}` : `${API_BASE}/marks`;
+            await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(data) });
+            closeMarksModal();
+            loadMarks();
+        });
 
         async function fetchClassMatrix() {
             const classId = document.getElementById('results-class-select').value;

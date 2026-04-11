@@ -64,6 +64,26 @@ export default function Login() {
         <p className="login-hint">
           Demo: admin@school.com / admin123 · teacher1@school.com / teacher123 · student1@school.com / student123
         </p>
+
+        <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #e0e0e0' }}>
+          {/* <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>Don't have an account?</p>
+          <a
+            href="/register"
+            className="btn btn-secondary"
+            style={{ width: '100%', textAlign: 'center', marginBottom: '0.75rem', textDecoration: 'none', display: 'block', padding: '0.75rem' }}
+          >
+            Create New Account
+          </a> */}
+
+          <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem', marginTop: '1rem' }}>Forgot your password?</p>
+          <a
+            href="/password-reset"
+            className="btn"
+            style={{ width: '100%', textAlign: 'center', textDecoration: 'none', display: 'block', padding: '0.75rem', backgroundColor: '#17a2b8', color: 'white', borderRadius: '4px', cursor: 'pointer' }}
+          >
+            Reset Password
+          </a>
+        </div>
       </div>
     </div>
   );

@@ -1,41 +1,259 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-<title>Register</title>
+  <meta charset="UTF-8">
+  <title>Student Portal Registration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #eaeaf0;
+    }
+
+    .container {
+      width: 900px;
+      height: auto;
+      display: flex;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .left {
+      width: 40%;
+      background: #111216;
+      color: white;
+      padding: 60px 40px;
+    }
+
+    .left h1 {
+      margin-bottom: 10px;
+    }
+
+    .left p {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 40px;
+    }
+
+    .input-box {
+      margin-bottom: 25px;
+    }
+
+    .input-box input,
+    .input-box select {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: white;
+      font-size: 15px;
+    }
+
+    .input-box input::placeholder {
+      color: #777;
+    }
+
+    .input-box select option {
+      color: black;
+      background: #333;
+    }
+
+    .register-btn {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background: #51cf66;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .register-btn:hover {
+      background: #40c057;
+    }
+
+    .error {
+      margin-top: 15px;
+      color: #ff6b6b;
+      font-size: 14px;
+    }
+
+    .success {
+      margin-top: 15px;
+      color: #51cf66;
+      font-size: 14px;
+    }
+
+    .back-link {
+      margin-top: 20px;
+    }
+
+    .back-link a {
+      color: #9b6ef3;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+
+    .right {
+      width: 60%;
+      background: #51cf66;
+      padding: 60px;
+      color: white;
+      position: relative;
+    }
+
+    .right h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .right p {
+      font-size: 15px;
+      opacity: .9;
+    }
+
+    .illustration {
+      position: absolute;
+      bottom: 20px;
+      right: 40px;
+      width: 300px;
+    }
+
+    @media(max-width:900px) {
+      .container {
+        flex-direction: column;
+        height: auto;
+        width: 90%
+      }
+
+      .left,
+      .right {
+        width: 100%
+      }
+
+      .illustration {
+        position: static;
+        width: 220px;
+        margin-top: 30px
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>Register</h2>
+  <div class="container">
+    <div class="left">
+      <h1>Create Account</h1>
+      <p>Join our student portal</p>
 
-<input id="name" placeholder="Name"><br>
-<input id="email" placeholder="Email"><br>
-<input id="password" placeholder="Password"><br>
+      <div class="input-box">
+        <input type="text" id="name" placeholder="Full Name">
+      </div>
 
-<select id="role">
-  <option value="student">Student</option>
-  <option value="teacher">Teacher</option>
-  <option value="admin">Admin</option>
-</select><br><br>
+      <div class="input-box">
+        <input type="email" id="email" placeholder="Email Address">
+      </div>
 
-<button onclick="register()">Register</button>
+      <div class="input-box">
+        <input type="password" id="password" placeholder="Password (min 6 characters)">
+      </div>
 
-<script>
-async function register() {
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const role = document.getElementById("role").value;
+      <div class="input-box">
+        <select id="role">
+          <option value="">Select Your Role</option>
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+        </select>
+      </div>
 
-  const res = await fetch("http://localhost:5000/api/auth/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password, role })
-  });
+      <button class="register-btn" id="registerBtn" type="button">Register</button>
+      <div class="error" id="errorMsg"></div>
+      <div class="success" id="successMsg"></div>
 
-  const data = await res.json();
-  alert(data.message || data.error);
-}
-</script>
+      <div class="back-link">
+        <p style="font-size: 13px; color: #aaa;">Already have an account? <a href="login.html">Login here</a></p>
+      </div>
+    </div>
+
+    <div class="right">
+      <h1>Welcome!<br>Join Us Today</h1>
+      <p>Create your account to access the student portal and manage your academic journey</p>
+      <img class="illustration" src="https://cdn-icons-png.flaticon.com/512/3556/3556097.png">
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("registerBtn").addEventListener("click", async function () {
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const role = document.getElementById("role").value.trim();
+      const errorMsg = document.getElementById("errorMsg");
+      const successMsg = document.getElementById("successMsg");
+
+      errorMsg.innerText = "";
+      successMsg.innerText = "";
+
+      if (!name || !email || !password || !role) {
+        errorMsg.innerText = "Please fill in all fields";
+        return;
+      }
+
+      if (password.length < 6) {
+        errorMsg.innerText = "Password must be at least 6 characters";
+        return;
+      }
+
+      if (!email.includes("@")) {
+        errorMsg.innerText = "Please enter a valid email";
+        return;
+      }
+
+      try {
+        const res = await fetch("http://localhost:4003/admin/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password, role })
+        });
+
+        const data = await res.json();
+        console.log('response', data);
+
+        if (res.ok) {
+          successMsg.innerText = "✓ Registration successful! Redirecting to login...";
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 2000);
+        } else {
+          errorMsg.innerText = data.message || "Registration failed";
+        }
+      } catch (err) {
+        errorMsg.innerText = "Server error. Is backend running? (Check port 4003)";
+        console.log(err);
+      }
+    });
+  </script>
 
 </body>
+
 </html>

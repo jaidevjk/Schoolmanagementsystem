@@ -387,15 +387,33 @@
       <div class="grid-cards">
         <div class="stat-card">
           <h3>Attendance</h3>
-          <div class="value">92%</div>
+          <div class="value" id="stat-attendance-pct">0%</div>
         </div>
         <div class="stat-card">
           <h3>Average Grade</h3>
-          <div class="value">A</div>
+          <div class="value" id="stat-avg-grade">-</div>
         </div>
         <div class="stat-card">
-          <h3>Fees Status</h3>
-          <div class="value" style="color: var(--success); font-size: 1.5rem;">Paid</div>
+          <h3>Total Subjects</h3>
+          <div class="value" id="stat-total-subjects">0</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+        <div class="dash-card">
+          <h3>Attendance Report</h3>
+          <div style="height: 300px; position: relative;">
+            <canvas id="attendancePieChart"></canvas>
+          </div>
+          <div style="margin-top: 1rem; text-align: center; color: var(--text-muted);">
+            <span id="stat-present-days">0</span> Days Present | <span id="stat-absent-days">0</span> Days Absent
+          </div>
+        </div>
+        <div class="dash-card">
+          <h3>Subject-wise Grades</h3>
+          <div style="height: 300px; position: relative;">
+            <canvas id="gradesBarChart"></canvas>
+          </div>
         </div>
       </div>
 
@@ -448,6 +466,8 @@
 
   <script>
     const API_BASE = 'http://localhost:5001/api';
+    let attendanceChart = null;
+    let gradesChart = null;
 
     function checkAuth() {
       const token = localStorage.getItem('token');
@@ -470,13 +490,132 @@
       window.location.href = 'login.html';
     }
 
-    function init() {
+    function marksToGrade(marks) {
+      if (marks >= 90) return { g: 'A', c: 'success' };
+      if (marks >= 80) return { g: 'A-', c: 'success' };
+      if (marks >= 70) return { g: 'B+', c: 'warning' };
+      if (marks >= 60) return { g: 'B', c: 'warning' };
+      return { g: 'C', c: 'danger' };
+    }
+
+    async function init() {
       const token = checkAuth();
       if (!token) return;
       const userName = localStorage.getItem('name') || 'Student';
       document.getElementById('sidebar-username').textContent = userName;
       document.getElementById('header-username').textContent = userName;
+
+      await fetchStudentData();
       showView('dashboard');
+    }
+
+    async function fetchStudentData() {
+      try {
+        const [attRes, marksRes, profileRes] = await Promise.all([
+          fetch(`${API_BASE}/attendance/me`, { headers: getHeaders() }).catch(() => ({ json: () => [] })),
+          fetch(`${API_BASE}/marks/me`, { headers: getHeaders() }).catch(() => ({ json: () => [] })),
+          fetch(`${API_BASE}/auth/me`, { headers: getHeaders() }).catch(() => ({ json: () => ({}) }))
+        ]);
+
+        const attendance = await attRes.json();
+        const marks = await marksRes.json();
+        const userProfile = await profileRes.json();
+
+        const aList = Array.isArray(attendance) ? attendance : (attendance.data || []);
+        const mList = Array.isArray(marks) ? marks : (marks.data || []);
+
+        // Stats Calculation
+        const present = aList.filter(a => a.status === 'present').length;
+        const absent = aList.filter(a => a.status === 'absent').length;
+        const totalAtt = present + absent || 1;
+        const attPct = Math.round((present / totalAtt) * 100);
+
+        document.getElementById('stat-attendance-pct').innerText = attPct + '%';
+        document.getElementById('stat-present-days').innerText = present;
+        document.getElementById('stat-absent-days').innerText = absent;
+
+        // Marks Processing
+        const subjectMarks = mList.reduce((acc, m) => {
+          const name = m.subjectId?.name || 'Subject';
+          if (!acc[name]) acc[name] = [];
+          acc[name].push(m.marksObtained);
+          return acc;
+        }, {});
+
+        const subjectAvg = Object.entries(subjectMarks).map(([name, arr]) => ({
+          name,
+          avg: Math.round(arr.reduce((a, b) => a + b, 0) / arr.length)
+        }));
+
+        const overallAvg = subjectAvg.length ? Math.round(subjectAvg.reduce((a, b) => a + b.avg, 0) / subjectAvg.length) : 0;
+        const overallGrade = marksToGrade(overallAvg);
+
+        document.getElementById('stat-avg-grade').innerText = overallGrade.g;
+        document.getElementById('stat-avg-grade').className = 'value badge-' + overallGrade.c;
+        document.getElementById('stat-total-subjects').innerText = subjectAvg.length;
+
+        // Profile Update
+        const prof = userProfile.studentProfile || {};
+        const className = prof.classId?.name || 'Class';
+        const section = prof.section || '';
+        document.querySelector('.dash-profile small').innerText = `${className} ${section}`;
+
+        // Render Charts
+        renderCharts(present, absent, subjectAvg);
+
+        // Store for other views
+        window.myAttendance = aList;
+        window.myMarks = mList;
+
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderCharts(present, absent, subjectAvg) {
+      const pieCtx = document.getElementById('attendancePieChart').getContext('2d');
+      if (attendanceChart) attendanceChart.destroy();
+      attendanceChart = new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+          labels: ['Present', 'Absent'],
+          datasets: [{
+            data: [present || 1, absent || 0],
+            backgroundColor: ['#2ecc71', '#e74c3c'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+
+      const barCtx = document.getElementById('gradesBarChart').getContext('2d');
+      if (gradesChart) gradesChart.destroy();
+
+      const labels = subjectAvg.length ? subjectAvg.map(s => s.name) : ['Math', 'Science', 'English'];
+      const data = subjectAvg.length ? subjectAvg.map(s => s.avg) : [85, 78, 92];
+
+      gradesChart = new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Average Marks',
+            data: data,
+            backgroundColor: '#3498db',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true, max: 100 } },
+          plugins: { legend: { display: false } }
+        }
+      });
     }
 
     function showView(viewName) {
@@ -489,44 +628,32 @@
         document.getElementById(`nav-${viewName}`).classList.add('active');
         document.getElementById('page-title').innerText = viewName.charAt(0).toUpperCase() + viewName.slice(1);
 
-        if (viewName === 'attendance') loadMyAttendance();
-        if (viewName === 'marks') loadMyMarks();
+        if (viewName === 'attendance') renderMyAttendance();
+        if (viewName === 'marks') renderMyMarks();
       }
     }
 
-    async function loadMyAttendance() {
-      const userId = localStorage.getItem('userId');
-      if (!userId) return;
-      try {
-        const res = await fetch(`${API_BASE}/attendance?studentId=${userId}`, { headers: getHeaders() });
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : (data.data || []);
-        document.getElementById('attendanceTable').innerHTML = list.map(a => `
-          <tr>
-            <td>${new Date(a.date).toLocaleDateString()}</td>
-            <td><span class="badge badge-${a.status === 'present' ? 'success' : a.status === 'absent' ? 'danger' : 'warning'}">${a.status}</span></td>
-          </tr>
-        `).join('') || '<tr><td colspan="2">No records found</td></tr>';
-      } catch (e) { console.error(e); }
+    function renderMyAttendance() {
+      const list = window.myAttendance || [];
+      document.getElementById('attendanceTable').innerHTML = list.map(a => `
+        <tr>
+          <td>${new Date(a.date).toLocaleDateString()}</td>
+          <td><span class="badge badge-${a.status === 'present' ? 'success' : a.status === 'absent' ? 'danger' : 'warning'}">${a.status}</span></td>
+        </tr>
+      `).join('') || '<tr><td colspan="2">No records found</td></tr>';
     }
 
-    async function loadMyMarks() {
-      const userId = localStorage.getItem('userId');
-      if (!userId) return;
-      try {
-        const res = await fetch(`${API_BASE}/marks?studentId=${userId}`, { headers: getHeaders() });
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : (data.data || []);
-        document.getElementById('marksTable').innerHTML = list.map(m => `
-          <tr>
-            <td>${m.subjectId ? m.subjectId.name : '-'}</td>
-            <td>${m.examType}</td>
-            <td><b>${m.marksObtained}</b></td>
-            <td>${m.maxMarks}</td>
-            <td>${m.academicYear}</td>
-          </tr>
-        `).join('') || '<tr><td colspan="5">No marks records found</td></tr>';
-      } catch (e) { console.error(e); }
+    function renderMyMarks() {
+      const list = window.myMarks || [];
+      document.getElementById('marksTable').innerHTML = list.map(m => `
+        <tr>
+          <td>${m.subjectId ? m.subjectId.name : (m.subjectName || '-')}</td>
+          <td>${m.examType}</td>
+          <td><b>${m.marksObtained}</b></td>
+          <td>${m.maxMarks}</td>
+          <td>${m.academicYear}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="5">No marks records found</td></tr>';
     }
 
     window.onload = init;

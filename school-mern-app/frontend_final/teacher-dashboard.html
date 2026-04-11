@@ -949,25 +949,28 @@
       const userName = localStorage.getItem('name') || 'Teacher';
       document.getElementById('sidebar-username').textContent = userName;
       document.getElementById('header-username').textContent = userName;
-      loadTeacherStats();
+
+      showLoading(true);
+      loadTeacherStats().finally(() => showLoading(false));
+
       showView('dashboard');
     }
 
     async function loadTeacherStats() {
       try {
-        const [cRes, sRes, mRes, aRes, uRes] = await Promise.all([
-          fetch(`${API_BASE}/classes`, { headers: getHeaders() }),
-          fetch(`${API_BASE}/students`, { headers: getHeaders() }),
-          fetch(`${API_BASE}/marks`, { headers: getHeaders() }),
-          fetch(`${API_BASE}/attendance`, { headers: getHeaders() }),
-          fetch(`${API_BASE}/auth/me`, { headers: getHeaders() })
+        const headers = getHeaders();
+        const [cRes, sRes, mRes, aRes, uRes, subRes] = await Promise.all([
+          fetch(`${API_BASE}/classes`, { headers }),
+          fetch(`${API_BASE}/students`, { headers }),
+          fetch(`${API_BASE}/marks`, { headers }),
+          fetch(`${API_BASE}/attendance`, { headers }),
+          fetch(`${API_BASE}/auth/me`, { headers }),
+          fetch(`${API_BASE}/subjects`, { headers })
         ]);
 
-        const classes = await cRes.json();
-        const students = await sRes.json();
-        const marks = await mRes.json();
-        const attendance = await aRes.json();
-        const userProfile = await uRes.json();
+        const [classes, students, marks, attendance, userProfile, subjects] = await Promise.all([
+          cRes.json(), sRes.json(), mRes.json(), aRes.json(), uRes.json(), subRes.json()
+        ]);
 
         const cList = Array.isArray(classes) ? classes : (classes.data || []);
         const sList = Array.isArray(students) ? students : (students.data || []);
@@ -986,9 +989,7 @@
         document.getElementById('prof-classes').innerText = prof.classIds ? prof.classIds.map(c => c.name).join(', ') : '-';
 
         // "Pending Marks" Calculation
-        const subRes = await fetch(`${API_BASE}/subjects`, { headers: getHeaders() });
-        const subs = await subRes.json();
-        const subList = Array.isArray(subs) ? subs : (subs.data || []);
+        const subList = Array.isArray(subjects) ? subjects : (subjects.data || []);
         document.getElementById('stat-pending').innerText = Math.max(0, subList.length - mList.length);
 
         // Populate dropdowns globally
@@ -1449,8 +1450,6 @@
     }
 
     // ================= ATTENDANCE LOGIC =================
-    window.onload = init;
-
     window.onload = init;
   </script>
 </body>
